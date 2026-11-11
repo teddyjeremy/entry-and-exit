@@ -154,6 +154,53 @@ def decode_transaction(tx: dict[str, Any], mint: str, curve: str,
     return wallet_events, quality
 
 
+def decode_curve_state(tx: dict[str, Any], mint: str, curve: str,
+                      launch_ts: int, cutoff_ts: int) -> dict[str, Any] | None:
+    ts = tx.get("timestamp")
+    if not isinstance(ts, (int, float)) or not launch_ts <= int(ts) <= cutoff_ts:
+        return None
+    if tx.get("transactionError"):
+        return None
+    native_lamports = sum(
+        int(account.get("nativeBalanceChange") or 0)
+        for account in tx.get("accountData") or []
+        if account.get("account") == curve
+    )
+    curve_token_delta = 0.0
+    found_balance_delta = False
+    for account in tx.get("accountData") or []:
+        for change in account.get("tokenBalanceChanges") or []:
+            if change.get("mint") == mint and (change.get("userAccount") or account.get("account")) == curve:
+                raw = change.get("rawTokenAmount") or {}
+                decimals = int(raw.get("decimals") or 0)
+                curve_token_delta += as_float(raw.get("tokenAmount")) / (10 ** decimals)
+                found_balance_delta = True
+    if not found_balance_delta:
+        for transfer in tx.get("tokenTransfers") or []:
+            if transfer.get("mint") != mint:
+                continue
+            amount = as_float(transfer.get("tokenAmount"))
+            if transfer.get("fromUserAccount") == curve:
+                curve_token_delta -= amount
+            if transfer.get("toUserAccount") == curve:
+                curve_token_delta += amount
+    if native_lamports == 0 and abs(curve_token_delta) < 1e-12:
+        return None
+    native_sol = native_lamports / LAMPORTS_PER_SOL
+    implied_price = (abs(native_sol) / abs(curve_token_delta)
+                     if native_sol and curve_token_delta else None)
+    return {
+        "mint": mint, "timestamp": int(ts),
+        "timestamp_utc": datetime.fromtimestamp(int(ts), timezone.utc).isoformat(),
+        "signature": tx.get("signature"), "slot": tx.get("slot"),
+        "curve_native_balance_delta_sol": native_sol,
+        "curve_token_balance_delta": curve_token_delta,
+        "implied_curve_price_sol_per_token_estimate": implied_price,
+        "price_estimate_warning": "Curve account deltas can include fees and multiple transaction legs; this is not a quoted execution price.",
+        "liquidity_interpretation": "Relative reserve movement only; absolute reserves are not reconstructed from these deltas.",
+    }
+
+
 def summarize_wallet_events(events: list[dict[str, Any]], creator: str) -> list[dict[str, Any]]:
     wallets: dict[str, dict[str, Any]] = {}
     for event in events:
@@ -185,12 +232,14 @@ def main() -> int:
     trades_path = ANALYSIS_DIR / "trade-events.jsonl"
     wallets_path = ANALYSIS_DIR / "wallet-metrics.jsonl"
     coins_path = ANALYSIS_DIR / "coin-metrics.jsonl"
-    for path in (trades_path, wallets_path, coins_path):
+    curve_path = ANALYSIS_DIR / "curve-state.jsonl"
+    for path in (trades_path, wallets_path, coins_path, curve_path):
         path.write_text("", encoding="utf-8")
 
     all_events = []
     coin_rows = []
     total_raw = total_unique = total_failed = total_unclassified = 0
+    total_curve_events = 0
     incomplete = []
     parse_errors = 0
 
@@ -229,6 +278,9 @@ def main() -> int:
                         transactions[signature] = tx
 
         events = []
+        curve_events = []
+        cumulative_curve_native = 0.0
+        cumulative_curve_token = 0.0
         failed = 0
         unclassified = 0
         in_window = 0
@@ -238,8 +290,18 @@ def main() -> int:
             in_window += int(quality["in_window"])
             unclassified += quality["unclassified_wallet_flows"]
             events.extend(decoded)
+        for tx in sorted(transactions.values(), key=lambda item: (item.get("timestamp") or 0, item.get("signature") or "")):
+            curve_event = decode_curve_state(tx, mint, curve, launch_ts, cutoff_ts)
+            if curve_event:
+                cumulative_curve_native += curve_event["curve_native_balance_delta_sol"]
+                cumulative_curve_token += curve_event["curve_token_balance_delta"]
+                curve_event["cumulative_curve_native_delta_sol_from_first_observed"] = cumulative_curve_native
+                curve_event["cumulative_curve_token_delta_from_first_observed"] = cumulative_curve_token
+                curve_events.append(curve_event)
 
         events.sort(key=lambda event: (event["timestamp"], event.get("signature") or "", event["wallet"]))
+        for curve_event in curve_events:
+            append_jsonl(curve_path, curve_event)
         wallet_rows = summarize_wallet_events(events, candidate.get("creator") or "")
         buyers = [row for row in wallet_rows if row["buy_count"] > 0]
         sellers = [row for row in wallet_rows if row["sell_count"] > 0]
@@ -285,6 +347,9 @@ def main() -> int:
             "creator_decoded_sell_count": creator_row["sell_count"] if creator_row else 0,
             "unclassified_wallet_flows": unclassified,
             "decoded_trade_events": len(events),
+            "curve_state_events": len(curve_events),
+            "last_observed_cumulative_curve_native_delta_sol": cumulative_curve_native if curve_events else None,
+            "last_observed_cumulative_curve_token_delta": cumulative_curve_token if curve_events else None,
             "data_quality": "COMPLETE_RAW_HISTORY" if is_complete else "INCOMPLETE_RAW_HISTORY",
             "interpretation_warning": "Observed native balance deltas are not trade notional; decoded events are evidence, not a BUY signal or realized PnL.",
         }
@@ -299,6 +364,7 @@ def main() -> int:
         total_unique += len(transactions)
         total_failed += failed
         total_unclassified += unclassified
+        total_curve_events += len(curve_events)
         if index % 25 == 0:
             print(f"Decoded {index}/{len(queue)} coins...", flush=True)
 
@@ -315,16 +381,19 @@ def main() -> int:
         "decoded_sell_events": sum(event["side"] == "SELL" for event in all_events),
         "unique_wallets_in_decoded_events": len({event["wallet"] for event in all_events}),
         "unclassified_wallet_flows": total_unclassified,
+        "curve_state_events": total_curve_events,
         "files": {
             "coin_metrics": "analysis/coin-metrics.jsonl",
             "wallet_metrics": "analysis/wallet-metrics.jsonl",
             "trade_events": "analysis/trade-events.jsonl",
+            "curve_state": "analysis/curve-state.jsonl",
         },
         "limitations": [
             "This decoder uses Helius token transfers and signed token balance deltas; it does not decode Pump.fun instruction bytes.",
             "A wallet's native balance delta may include fees, priority tips, rent, unrelated transfers, and other transaction legs; it is not asserted as trade notional.",
             "Direct bonding-curve transfer evidence is preferred; signed token/native balance deltas are a fallback and may include non-swap activity.",
             "Transactions that cannot be confidently classified as BUY or SELL are excluded from trade counts and reported as unclassified.",
+            "Curve-state output records relative reserve deltas and a rough implied price only when curve native and token deltas coexist; it is not a reliable post-migration market price or absolute liquidity measurement.",
             "No historical quote simulation, slippage model, wallet-cluster attribution, realized PnL, or final BUY decision is produced.",
         ],
         "status": "DECODED_RESEARCH_EVIDENCE_NOT_A_STRATEGY",
@@ -336,6 +405,7 @@ def main() -> int:
     collection_summary["analysis_outputs"] = summary["files"]
     collection_summary["decoded_buy_events"] = summary["decoded_buy_events"]
     collection_summary["decoded_sell_events"] = summary["decoded_sell_events"]
+    collection_summary["curve_state_events"] = summary["curve_state_events"]
     collection_summary["coins_with_incomplete_raw_history"] = summary["coins_with_incomplete_raw_history"]
     collection_summary["limitation"] = "Trade-side evidence is decoded, but native deltas are not trade notional; no execution simulation, realized PnL, or final BUY decision is produced."
     write_json(collection_summary_path, collection_summary)
