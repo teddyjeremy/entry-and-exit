@@ -330,6 +330,15 @@ def main() -> int:
         "status": "DECODED_RESEARCH_EVIDENCE_NOT_A_STRATEGY",
     }
     write_json(ANALYSIS_DIR / "analysis-summary.json", summary)
+    collection_summary_path = COHORT_DIR / "collection-summary.json"
+    collection_summary = read_json(collection_summary_path, {})
+    collection_summary["analysis_status"] = summary["status"]
+    collection_summary["analysis_outputs"] = summary["files"]
+    collection_summary["decoded_buy_events"] = summary["decoded_buy_events"]
+    collection_summary["decoded_sell_events"] = summary["decoded_sell_events"]
+    collection_summary["coins_with_incomplete_raw_history"] = summary["coins_with_incomplete_raw_history"]
+    collection_summary["limitation"] = "Trade-side evidence is decoded, but native deltas are not trade notional; no execution simulation, realized PnL, or final BUY decision is produced."
+    write_json(collection_summary_path, collection_summary)
     print(json.dumps(summary, indent=2))
     return 0
 
