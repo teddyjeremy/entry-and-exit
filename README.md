@@ -50,11 +50,13 @@ No live trading, wallet signing, or transaction submission is performed.
 **Important:** this repository is still a read-only research collector. It does not implement the historical replay engine, paper execution engine, wallet signing, or live trading. `live_trading_enabled` remains `false` in the baseline configuration.
 - A fail-closed preflight gate is available in `strategy/eligibility.py`; it rejects migrated tokens, non-Pump.fun curves, missing evidence, stale observations, unavailable quotes, and threshold failures. It is not yet connected to a transaction parser or trading engine.
 
-## Portfolio entry limits (paper-strategy policy)
+## Portfolio limits and trade sizing (paper-strategy policy)
 
 - Start with at most **one concurrent open position**.
 - Increase the limit by one at each additional **$5 of realized portfolio equity**: below $5 = 1 position; $5–$9.99 = 2; $10–$14.99 = 3.
 - Unrealized gains on open positions do not increase the limit.
 - An open position keeps its slot until the exit is confirmed and reconciled; no new entry can use that slot before then.
 - A mint can be entered **only once ever**. Exiting does not make that mint eligible again.
-- The pure policy is in `strategy/portfolio_rules.py`; persistent ledger and atomic reservation integration are still required in the future paper engine.
+- Starting from the configured $2.70 portfolio and $1.00 stake, increase the stake by **50% for every full doubling** of realized equity: $2.70 → $1.00; $5.40 → $1.50; $10.80 → $2.25; $21.60 → $3.38.
+- Cap each trade at **$100**, and never stake more than available realized equity. Stake tiers and concurrent-position tiers are independent.
+- Pure policies are in `strategy/portfolio_rules.py`; persistent ledger and atomic reservation integration are still required in the future paper engine.

@@ -49,5 +49,22 @@
       "A mint is permanently blocked from another entry after its first entry, including after a full exit.",
       "Persist the set of previously traded mints in the durable trade ledger and reserve entry atomically before submitting an order."
     ]
+  },
+  "trade_sizing": {
+    "equity_basis": "realized_equity_only",
+    "starting_portfolio_usd": 2.70,
+    "starting_trade_stake_usd": 1.00,
+    "stake_multiplier_per_portfolio_doubling": 1.50,
+    "maximum_trade_stake_usd": 100.00,
+    "formula": "min(maximum_trade_stake_usd, starting_trade_stake_usd * 1.5 ^ floor(log2(realized_portfolio_usd / starting_portfolio_usd)))",
+    "stake_must_not_exceed_available_equity": true,
+    "notes": [
+      "The initial $2.70 portfolio and $1.00 trade stake are the current paper-research starting assumptions; change them together if the starting balance changes.",
+      "Increase the stake only after each full doubling of realized portfolio equity; partial growth does not advance the tier.",
+      "At $2.70 stake $1.00; at $5.40 stake $1.50; at $10.80 stake $2.25; at $21.60 stake $3.38.",
+      "The stake is capped at $100 and is also capped by available realized equity.",
+      "This stake tier is independent of the $5 milestones that control the number of concurrent positions.",
+      "Do not use unrealized open-position gains to increase the stake."
+    ]
   }
 }

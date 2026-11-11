@@ -3,6 +3,7 @@ import unittest
 from strategy.portfolio_rules import (
     evaluate_entry_capacity,
     maximum_concurrent_positions,
+    trade_stake_usd,
 )
 
 
@@ -67,6 +68,45 @@ class PortfolioRulesTests(unittest.TestCase):
         result = evaluate_entry_capacity("new-mint", 10, ["a", "a"], ["a"])
         self.assertFalse(result["approved"])
         self.assertIn("duplicate_open_position_state", result["rejection_reasons"])
+
+
+class TradeStakeSizingTests(unittest.TestCase):
+    def test_initial_stake_and_first_doubling(self):
+        self.assertEqual(trade_stake_usd(2.70), 1.00)
+        self.assertEqual(trade_stake_usd(5.39), 1.00)
+        self.assertEqual(trade_stake_usd(5.40), 1.50)
+
+    def test_each_full_doubling_increases_stake_by_fifty_percent(self):
+        self.assertEqual(trade_stake_usd(10.80), 2.25)
+        self.assertEqual(trade_stake_usd(21.60), 3.38)
+        self.assertEqual(trade_stake_usd(43.20), 5.06)
+
+    def test_does_not_increase_before_a_full_doubling(self):
+        self.assertEqual(trade_stake_usd(10.79), 1.50)
+        self.assertEqual(trade_stake_usd(20.00), 2.25)
+
+    def test_stake_never_exceeds_available_equity_or_cap(self):
+        self.assertEqual(trade_stake_usd(0), 0.00)
+        self.assertEqual(trade_stake_usd(0.50), 0.50)
+        self.assertEqual(
+            trade_stake_usd(100_000, maximum_stake_usd=100), 100.00
+        )
+
+    def test_custom_starting_portfolio_and_stake(self):
+        self.assertEqual(
+            trade_stake_usd(
+                20, starting_portfolio_usd=10, starting_stake_usd=2
+            ),
+            3.00,
+        )
+
+    def test_invalid_stake_configuration_is_rejected(self):
+        for value in (-1, float("nan"), float("inf")):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    trade_stake_usd(value)
+        with self.assertRaises(ValueError):
+            trade_stake_usd(10, growth_per_doubling=0.9)
 
 
 if __name__ == "__main__":

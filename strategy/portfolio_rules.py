@@ -1,8 +1,7 @@
-"""Portfolio concurrency and one-entry-per-mint rules.
+"""Portfolio concurrency, one-entry-per-mint, and stake-sizing rules.
 
-This is a pure admission policy. A future paper/live execution engine must
-persist the traded-mint history and reserve an entry atomically before sending
-an order; this module does not submit transactions or maintain storage.
+These are pure policies. A future paper/live execution engine must persist
+trade history and reserve entries atomically; this module does not execute orders.
 """
 from __future__ import annotations
 
@@ -40,6 +39,55 @@ def maximum_concurrent_positions(
         raise ValueError("starting_positions must be a positive integer")
 
     return starting_positions + math.floor(realized_portfolio_usd / milestone_usd)
+
+
+def trade_stake_usd(
+    realized_portfolio_usd: float,
+    starting_portfolio_usd: float = 2.70,
+    starting_stake_usd: float = 1.00,
+    growth_per_doubling: float = 1.50,
+    maximum_stake_usd: float = 100.00,
+) -> float:
+    """Size each trade at +50% for each doubling of realized portfolio equity.
+
+    The first tier is anchored to the configured starting portfolio. Equity
+    below that baseline does not earn a larger tier; stake is also capped at
+    available equity and at the configured $100 maximum.
+    """
+    values = {
+        "realized_portfolio_usd": realized_portfolio_usd,
+        "starting_portfolio_usd": starting_portfolio_usd,
+        "starting_stake_usd": starting_stake_usd,
+        "growth_per_doubling": growth_per_doubling,
+        "maximum_stake_usd": maximum_stake_usd,
+    }
+    for name, value in values.items():
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+        ):
+            raise ValueError(f"{name} must be a finite number")
+
+    if realized_portfolio_usd < 0:
+        raise ValueError("realized_portfolio_usd must be non-negative")
+    if starting_portfolio_usd <= 0 or starting_stake_usd <= 0:
+        raise ValueError("starting portfolio and starting stake must be positive")
+    if growth_per_doubling < 1:
+        raise ValueError("growth_per_doubling must be at least 1")
+    if maximum_stake_usd <= 0:
+        raise ValueError("maximum_stake_usd must be positive")
+    if realized_portfolio_usd == 0:
+        return 0.0
+
+    doublings = 0
+    if realized_portfolio_usd >= starting_portfolio_usd:
+        ratio = realized_portfolio_usd / starting_portfolio_usd
+        # Small epsilon avoids floating-point errors at exact doubling tiers.
+        doublings = math.floor(math.log2(ratio) + 1e-12)
+
+    calculated = starting_stake_usd * (growth_per_doubling ** doublings)
+    return round(min(calculated, maximum_stake_usd, realized_portfolio_usd), 2)
 
 
 def evaluate_entry_capacity(
