@@ -410,13 +410,20 @@ def main() -> int:
             incomplete_mints.append(candidate["mint"])
     remaining = bool(incomplete_mints) if repair_mode else end_index < len(candidates)
     processed_count = len(candidates) - len(incomplete_mints) if repair_mode else end_index
+    summary_next_index = len(candidates) if repair_mode and not remaining else end_index
+    if repair_mode and not remaining:
+        write_json(checkpoint_path, {
+            "next_index": len(candidates), "candidate_count": len(candidates),
+            "completed_this_batch": len(manifests),
+            "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+        })
     write_json(cohort_dir / "collection-summary.json", {
         "date_utc": DAY, "hour_utc": HOUR, "selected_for_deep_collection": len(candidates),
         "processed_candidates": processed_count, "remaining_candidates": len(incomplete_mints) if repair_mode else len(candidates) - end_index,
         "coins_with_complete_history": complete_count,
         "incomplete_coin_count": len(incomplete_mints), "incomplete_mints": incomplete_mints,
         "repair_mode": repair_mode,
-        "batch_size": BATCH_SIZE, "next_index": end_index,
+        "batch_size": BATCH_SIZE, "next_index": summary_next_index,
         "data_window_rule": "Only transactions with timestamps from launch through launch+3600 seconds inclusive are saved.",
         "limitation": "Raw address transactions are not yet decoded into swaps/trades; no PnL or final entry decision is produced.",
         "complete": not remaining,
