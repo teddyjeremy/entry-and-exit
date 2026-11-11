@@ -80,6 +80,17 @@ class DecodeTransactionTests(unittest.TestCase):
         self.assertEqual(event["implied_curve_price_sol_per_token_estimate"], 1.0)
         self.assertIn("Relative reserve movement only", event["liquidity_interpretation"])
 
+
+    def test_curve_state_ignores_unrelated_native_movements(self):
+        tx = {
+            "timestamp": 1005, "signature": "unrelated", "slot": 1,
+            "transactionError": None,
+            "accountData": [{"account": CURVE, "nativeBalanceChange": 1_000_000_000,
+                             "tokenBalanceChanges": []}],
+            "tokenTransfers": [],
+        }
+        self.assertIsNone(decode_curve_state(tx, MINT, CURVE, 1000, 4600))
+
     def test_ambiguous_flow_is_not_guessed(self):
         tx = tx_template(BUYER, 2_000_000, 0, "OtherSource", "OtherDestination", "unknown")
         events, quality = decode_transaction(tx, MINT, CURVE, 1000, 4600)
