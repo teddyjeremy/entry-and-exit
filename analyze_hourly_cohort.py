@@ -161,6 +161,13 @@ def decode_curve_state(tx: dict[str, Any], mint: str, curve: str,
         return None
     if tx.get("transactionError"):
         return None
+    target_mint_activity = any(
+        change.get("mint") == mint
+        for account in tx.get("accountData") or []
+        for change in account.get("tokenBalanceChanges") or []
+    ) or any(transfer.get("mint") == mint for transfer in tx.get("tokenTransfers") or [])
+    if not target_mint_activity:
+        return None
     native_lamports = sum(
         int(account.get("nativeBalanceChange") or 0)
         for account in tx.get("accountData") or []
