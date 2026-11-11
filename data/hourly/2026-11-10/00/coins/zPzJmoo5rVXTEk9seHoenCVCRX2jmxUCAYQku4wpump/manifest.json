@@ -1,6 +1,6 @@
 {
   "bonding_curve": "DfRSaBB8XWg1NgiP68PQCyNDoQNTQJFfmWkrMy7PRV5w",
-  "collection_status": "INCOMPLETE",
+  "collection_status": "COMPLETE",
   "created": 1794272182,
   "created_utc": "2026-11-10T00:56:22+00:00",
   "creator": "38qy9n81zMDWKVJsQY1hjps8qPScGPL45VFAhxWgBrs7",
@@ -28,7 +28,7 @@
   "mint_history": {
     "address": "zPzJmoo5rVXTEk9seHoenCVCRX2jmxUCAYQku4wpump",
     "before_signature": "vmNWE3HcGPKqUBtKU83KRTzzJD8ZvroVuE72U1TqpQozZSgTNyEXqsYCCA3uEadmWojEqqkZFT8zjBivoiJWRwr",
-    "completed": false,
+    "completed": true,
     "label": "mint",
     "page_files": [
       "page-0001.jsonl",
@@ -36,7 +36,7 @@
     ],
     "page_limit_hit": false,
     "pages_fetched": 2,
-    "reached_start_of_window": false,
+    "reached_start_of_window": true,
     "transactions_saved": 199,
     "window_end": 1794275782,
     "window_end_utc": "2026-11-10T01:56:22+00:00",

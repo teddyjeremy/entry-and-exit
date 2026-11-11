@@ -1,6 +1,6 @@
 {
   "bonding_curve": "D7ZamdEKEnXo4XVriyk9xgsyPzSLFNGMqtiFWYSPJvDZ",
-  "collection_status": "INCOMPLETE",
+  "collection_status": "COMPLETE",
   "created": 1794269855,
   "created_utc": "2026-11-10T00:17:35+00:00",
   "creator": "3WaW1FCvg5tGzKqDmnWbGv2didnnKiwZgco3UQrkAHuB",
@@ -29,8 +29,8 @@
   "mint": "9bQ8yieSUa62Su6DnadFwbthsYvtWeE7VGpp1P8qpump",
   "mint_history": {
     "address": "9bQ8yieSUa62Su6DnadFwbthsYvtWeE7VGpp1P8qpump",
-    "before_signature": "3ah3tYR9v3oAmc5scd7J3XwfcRyQyziGznYE5Hd2jsRw6hYUSERRmSgqRGNpA8LywagAmstyBNUhgQTNcYwsq1Zo",
-    "completed": false,
+    "before_signature": "yMwTaR9p4F6bm2iTJ52po8ftY4BRa18AvEC8rt4zBenBaptC2xLxshKHsGkMaCV8PAABTZHQKirGAwYh761ioRW",
+    "completed": true,
     "label": "mint",
     "page_files": [
       "page-0001.jsonl",
@@ -52,12 +52,18 @@
       "page-0017.jsonl",
       "page-0018.jsonl",
       "page-0019.jsonl",
-      "page-0020.jsonl"
+      "page-0020.jsonl",
+      "page-0021.jsonl",
+      "page-0022.jsonl",
+      "page-0023.jsonl",
+      "page-0024.jsonl",
+      "page-0025.jsonl",
+      "page-0026.jsonl"
     ],
-    "page_limit_hit": true,
-    "pages_fetched": 20,
-    "reached_start_of_window": false,
-    "transactions_saved": 1987,
+    "page_limit_hit": false,
+    "pages_fetched": 26,
+    "reached_start_of_window": true,
+    "transactions_saved": 2578,
     "window_end": 1794273455,
     "window_end_utc": "2026-11-10T01:17:35+00:00",
     "window_start": 1794269855,
