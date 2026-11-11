@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode
+from solders.pubkey import Pubkey
 
 import requests
 
@@ -23,6 +23,7 @@ API_KEY = os.environ.get("HELIUS_API_KEY", "").strip()
 PAGE_LIMIT = 100
 PAGES_PER_MINT = max(1, min(int(os.environ.get("PAGES_PER_MINT", "10")), 100))
 REQUEST_TIMEOUT = 45
+PUMP_PROGRAM_ID = Pubkey.from_string("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P")
 MAX_RETRIES = 5
 SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "entry-and-exit-research/1.0"})
@@ -95,10 +96,17 @@ def collect_asset(mint: str, mint_dir: Path) -> None:
         print(f"WARNING: metadata request failed for {mint}: {exc}", file=sys.stderr)
 
 
-def collect_history(mint: str, label: str, mint_dir: Path) -> None:
-    checkpoint_path = mint_dir / "checkpoint.json"
+def derive_bonding_curve(mint: str) -> str:
+    mint_pubkey = Pubkey.from_string(mint)
+    curve, _bump = Pubkey.find_program_address([b"bonding-curve", bytes(mint_pubkey)], PUMP_PROGRAM_ID)
+    return str(curve)
+
+
+def collect_history(address: str, label: str, mint_dir: Path, history_dir: Path | None = None) -> None:
+    history_dir = history_dir or mint_dir
+    checkpoint_path = history_dir / "checkpoint.json"
     checkpoint = read_json(checkpoint_path, {
-        "mint": mint,
+        "address": address,
         "label": label,
         "next_before_signature": None,
         "pages_collected": 0,
@@ -123,13 +131,13 @@ def collect_history(mint: str, label: str, mint_dir: Path) -> None:
         if cursor:
             params["before-signature"] = cursor
 
-        url = f"{API_BASE}/addresses/{mint}/transactions"
+        url = f"{API_BASE}/addresses/{address}/transactions"
         records = request_json(url, params=params)
 
         if isinstance(records, dict) and records.get("error"):
-            raise RuntimeError(f"Helius API error for {mint}: {records}")
+            raise RuntimeError(f"Helius API error for {address}: {records}")
         if not isinstance(records, list):
-            raise RuntimeError(f"Unexpected history response for {mint}: {type(records).__name__}")
+            raise RuntimeError(f"Unexpected history response for {address}: {type(records).__name__}")
 
         if not records:
             checkpoint["completed"] = True
@@ -139,7 +147,7 @@ def collect_history(mint: str, label: str, mint_dir: Path) -> None:
             break
 
         page_number = int(checkpoint["pages_collected"]) + 1
-        page_path = mint_dir / "transactions" / f"page-{page_number:06d}.jsonl"
+        page_path = history_dir / "transactions" / f"page-{page_number:06d}.jsonl"
         page_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Persist page first. Only then advance the cursor checkpoint.
@@ -149,7 +157,7 @@ def collect_history(mint: str, label: str, mint_dir: Path) -> None:
 
         last_signature = records[-1].get("signature")
         if not last_signature:
-            raise RuntimeError(f"Last record has no signature; refusing to advance checkpoint for {mint}")
+            raise RuntimeError(f"Last record has no signature; refusing to advance checkpoint for {address}")
 
         checkpoint["next_before_signature"] = last_signature
         checkpoint["pages_collected"] = page_number
@@ -208,13 +216,23 @@ def main() -> int:
         print(f"Collecting {label}: {mint}", flush=True)
         collect_asset(mint, mint_dir)
         collect_history(mint, label, mint_dir)
+        curve_checkpoint = None
+        if target.get("collect_curve_history", False):
+            curve_address = derive_bonding_curve(mint)
+            print(f"Derived Pump.fun bonding curve for {label}: {curve_address}", flush=True)
+            curve_dir = mint_dir / "bonding_curve"
+            collect_history(curve_address, f"{label}_bonding_curve", mint_dir, curve_dir)
+            curve_checkpoint = read_json(curve_dir / "checkpoint.json", {})
         checkpoint = read_json(mint_dir / "checkpoint.json", {})
         run_manifest["targets"].append({
             "label": label,
             "mint": mint,
             "pages_collected": checkpoint.get("pages_collected", 0),
             "transactions_collected": checkpoint.get("transactions_collected", 0),
-            "completed": checkpoint.get("completed", False)
+            "completed": checkpoint.get("completed", False),
+            "bonding_curve_address": curve_address if target.get("collect_curve_history", False) else None,
+            "bonding_curve_transactions": curve_checkpoint.get("transactions_collected", 0) if curve_checkpoint else 0,
+            "bonding_curve_completed": curve_checkpoint.get("completed", False) if curve_checkpoint else False
         })
 
     run_manifest["run_finished_at"] = utc_now()
