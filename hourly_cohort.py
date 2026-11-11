@@ -35,6 +35,10 @@ SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "entry-and-exit-hourly-research/2.0"})
 
 
+class HeliusRateLimitError(RuntimeError):
+    """Temporary provider throttling; the workflow should pause and retry."""
+
+
 def utc_iso(ts: int) -> str:
     return datetime.fromtimestamp(ts, timezone.utc).isoformat()
 
@@ -53,21 +57,36 @@ def append_jsonl(path: Path, payload: Any) -> None:
 
 
 def get_json(url: str, params: dict[str, Any] | None = None) -> Any:
-    for attempt in range(10):
+    rate_limit_attempts = 0
+    server_attempts = 0
+    while True:
         response = SESSION.get(url, params=params, timeout=TIMEOUT)
-        if response.status_code == 429 or response.status_code >= 500:
+        if response.status_code == 429:
+            rate_limit_attempts += 1
+            if rate_limit_attempts >= 6:
+                raise HeliusRateLimitError(
+                    f"Helius rate limit persisted after {rate_limit_attempts} attempts; "
+                    "checkpoint local progress and let the workflow cool down."
+                )
             retry_after = response.headers.get("Retry-After")
             try:
-                delay = float(retry_after) if retry_after else min(2 ** attempt, 60)
+                delay = float(retry_after) if retry_after else min(15 * (2 ** (rate_limit_attempts - 1)), 300)
             except ValueError:
-                delay = min(2 ** attempt, 60)
-            delay = min(max(delay, 1), 120)
-            print(f"HTTP {response.status_code}; retrying in {delay:g}s (attempt {attempt + 1}/10)", flush=True)
+                delay = min(15 * (2 ** (rate_limit_attempts - 1)), 300)
+            delay = min(max(delay, 5), 600)
+            print(f"Helius HTTP 429; cooling down {delay:g}s (attempt {rate_limit_attempts}/6)", flush=True)
+            time.sleep(delay)
+            continue
+        if response.status_code >= 500:
+            server_attempts += 1
+            if server_attempts >= 6:
+                response.raise_for_status()
+            delay = min(5 * (2 ** (server_attempts - 1)), 120)
+            print(f"Helius HTTP {response.status_code}; retrying in {delay:g}s (attempt {server_attempts}/6)", flush=True)
             time.sleep(delay)
             continue
         response.raise_for_status()
         return response.json()
-    raise RuntimeError(f"Request failed after 10 retries: {url}")
 
 
 def classify_coin(coin: dict[str, Any]) -> tuple[str, str | None]:
@@ -410,7 +429,11 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except HeliusRateLimitError as exc:
+        print(str(exc), file=sys.stderr, flush=True)
+        raise SystemExit(75)
 
 # Trigger the corrected resumable cohort workflow after merge.
 
