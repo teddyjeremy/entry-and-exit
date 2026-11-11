@@ -72,7 +72,7 @@ def status(authorization: str | None = Header(default=None)) -> dict[str, Any]:
         "feed_state": payload.get("feed_state", "NOT_CONFIGURED"),
         "last_event_at": payload.get("last_event_at"),
         "open_positions": payload.get("open_positions", 0),
-        "portfolio_value_usd": payload.get("portfolio_value_usd", 1.0),
+        "portfolio_value_usd": payload.get("portfolio_value_usd"),
         "real_orders_enabled": False,
         "updated_at": payload.get("updated_at"),
         "blockers": payload.get("blockers", [
@@ -97,7 +97,7 @@ def ingest_event(event: NormalizedMarketEvent,
         "feed_state": "EVENTS_RECEIVED_DECODER_UNVERIFIED",
         "last_event_at": utc_now(),
         "open_positions": 0,
-        "portfolio_value_usd": 1.0,
+        "portfolio_value_usd": None,
         "real_orders_enabled": False,
         "blockers": ["Strategy evaluation remains disabled until event-decoder fixtures pass."],
         "updated_at": utc_now()
