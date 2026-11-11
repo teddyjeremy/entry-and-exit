@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 type Status = {
   connected?: boolean; mode?: string; strategy?: string; engine_state?: string;
   feed_state?: string; last_event_at?: string | null; open_positions?: number;
-  portfolio_value_usd?: number; real_orders_enabled?: boolean; blockers?: string[];
+  portfolio_value_usd?: number | null; real_orders_enabled?: boolean; blockers?: string[];
 };
 
 export default function Home() {
