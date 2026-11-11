@@ -116,7 +116,7 @@ def collect_history(address: str, label: str, mint_dir: Path, history_dir: Path 
     })
 
     if checkpoint.get("completed"):
-        print(f"History already complete for {label} ({mint})")
+        print(f"History already complete for {label} ({address})")
         return
 
     pages_this_run = 0
