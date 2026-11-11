@@ -101,12 +101,13 @@ def collect_asset(mint: str, mint_dir: Path) -> None:
         })
     except Exception as exc:
         # Metadata failure should not prevent transaction-history collection.
+        safe_error = redact_sensitive(str(exc))
         write_json(mint_dir / "asset_error.json", {
             "collected_at": utc_now(),
             "mint": mint,
-            "error": str(exc)
+            "error": safe_error
         })
-        print(f"WARNING: metadata request failed for {mint}: {exc}", file=sys.stderr)
+        print(f"WARNING: metadata request failed for {mint}: {safe_error}", file=sys.stderr)
 
 
 def derive_bonding_curve(mint: str) -> str:
@@ -160,6 +161,12 @@ def collect_history(address: str, label: str, mint_dir: Path, history_dir: Path 
             print(f"No more history for {label}; empty page confirmed completion.")
             break
 
+        last_signature = records[-1].get("signature")
+        if not last_signature:
+            raise RuntimeError(f"Last record has no signature; refusing to save or advance checkpoint for {address}")
+        if last_signature == cursor:
+            raise RuntimeError(f"Pagination cursor did not advance for {address}; refusing to duplicate a page")
+
         page_number = int(checkpoint["pages_collected"]) + 1
         page_path = history_dir / "transactions" / f"page-{page_number:06d}.jsonl"
         page_path.parent.mkdir(parents=True, exist_ok=True)
@@ -169,9 +176,6 @@ def collect_history(address: str, label: str, mint_dir: Path, history_dir: Path 
             for record in records:
                 handle.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
 
-        last_signature = records[-1].get("signature")
-        if not last_signature:
-            raise RuntimeError(f"Last record has no signature; refusing to advance checkpoint for {address}")
 
         checkpoint["next_before_signature"] = last_signature
         checkpoint["pages_collected"] = page_number
