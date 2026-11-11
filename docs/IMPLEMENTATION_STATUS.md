@@ -13,6 +13,9 @@ This repository is a read-only Helius research collector. It is not a trading bo
 - Add regression tests for secret redaction, short-page completion, repeated cursors, missing signatures, migrated tokens, non-Pump.fun curves, unknown market state, stale quotes/data, missing fields, and threshold failures.
 - Add a fail-closed eligibility preflight function; missing evidence and migrated/non-Pump.fun states cannot be approved.
 - Run those tests in a separate GitHub Actions workflow.
+- Add a conservative Helius Pump instruction evidence parser that recursively inspects nested router calls and recognizes only the reviewed buyV2/sellV2 instruction discriminators when the configured mint and curve appear in the same instruction.
+- Add a raw-transaction audit documenting the TRENCHER sample's mixed Helius labels, duplicate signatures, incomplete collection, and parser limitations.
+- Add eight parser regression tests; latest verified CI run passed all 20 tests (run `43002244843`).
 - Record the agreed recommended filter baseline as paper-only configuration. Live trading remains disabled.
 
 ## Next implementation phases
@@ -27,7 +30,8 @@ This repository is a read-only Helius research collector. It is not a trading bo
 
 ### 2. Historical replay and strategy validation
 
-- Build a deterministic parser for finalized Pump.fun bonding-curve swaps.
+- Current parser is only an instruction-evidence gate, not a complete swap parser. The collected TRENCHER history contains legacy Pump discriminators that are deliberately left unclassified; retrieve and pin matching historical IDL versions before expanding support.
+- Build a deterministic parser for finalized Pump.fun bonding-curve swaps, including verified quote-asset/token balance reconciliation and trade-size accounting.
 - Identify the underlying program and curve accounts; do not classify a trade solely by the router (Jupiter/OKX/etc.).
 - Exclude post-migration activity from the bonding-curve strategy.
 - Compute real curve SOL reserves separately from virtual reserves.
@@ -68,6 +72,7 @@ See `config/strategy_baseline.json`. These are experimental research filters, no
 
 - Research collector: safety fixes and regression tests added in this branch; CI passed. Real-data pagination fixtures and broader collector validation remain.
 - Eligibility preflight: implemented as a pure fail-closed gate; it still requires a trusted parser to populate its snapshot fields.
+- Pump instruction evidence parser: implemented conservatively for current buyV2/sellV2 discriminators; legacy instruction decoding and quote-asset accounting remain incomplete.
 - Historical replay: not implemented.
 - Paper trading engine: not implemented.
 - Live trading: disabled and not implemented.
