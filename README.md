@@ -48,3 +48,4 @@ No live trading, wallet signing, or transaction submission is performed.
 - Collector safety changes and remaining implementation/release gates are documented in `docs/IMPLEMENTATION_STATUS.md`.
 
 **Important:** this repository is still a read-only research collector. It does not implement the historical replay engine, paper execution engine, wallet signing, or live trading. `live_trading_enabled` remains `false` in the baseline configuration.
+- A fail-closed preflight gate is available in `strategy/eligibility.py`; it rejects migrated tokens, non-Pump.fun curves, missing evidence, stale observations, unavailable quotes, and threshold failures. It is not yet connected to a transaction parser or trading engine.
