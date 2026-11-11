@@ -1,0 +1,61 @@
+{
+  "bonding_curve": "AMKL4htLR4cMYsQzRZGjzs5TBffAc7j1wnsAAMf7Cdmr",
+  "collection_status": "COMPLETE",
+  "created": 1794269511,
+  "created_utc": "2026-11-10T00:11:51+00:00",
+  "creator": "8WZwQJna2Kc9212usM2GhQSknk8sec5qScsq9FU29iLV",
+  "curve_history": {
+    "address": "AMKL4htLR4cMYsQzRZGjzs5TBffAc7j1wnsAAMf7Cdmr",
+    "before_signature": "3U3KPQUS4sS2FoLxsy79qtFN6zzyyjYFfe4rQSXqrEK3TNZgnwm22r11wgRbxNoNCF8Zcdkb27M8cQ9LBhC3HMjs",
+    "completed": true,
+    "label": "bonding_curve",
+    "page_files": [
+      "page-0001.jsonl",
+      "page-0002.jsonl",
+      "page-0003.jsonl",
+      "page-0004.jsonl",
+      "page-0005.jsonl"
+    ],
+    "page_limit_hit": false,
+    "pages_fetched": 5,
+    "reached_start_of_window": true,
+    "transactions_saved": 480,
+    "window_end": 1794273111,
+    "window_end_utc": "2026-11-10T01:11:51+00:00",
+    "window_start": 1794269511,
+    "window_start_utc": "2026-11-10T00:11:51+00:00"
+  },
+  "data_cutoff": 1794273111,
+  "data_cutoff_utc": "2026-11-10T01:11:51+00:00",
+  "mint": "Hx5J1VJVcoYAwc24rHegjwAzxrneuax9tHoy3fzApump",
+  "mint_history": {
+    "address": "Hx5J1VJVcoYAwc24rHegjwAzxrneuax9tHoy3fzApump",
+    "before_signature": "5gmUj5JqhmwdgukPW9jrng1RPUAXbHuMmv2wrbxbAmDj2RLG7E7VTTCkg7Kq4FoD956iZVnziF5Ht3pwSoyWkrox",
+    "completed": true,
+    "label": "mint",
+    "page_files": [
+      "page-0001.jsonl",
+      "page-0002.jsonl",
+      "page-0003.jsonl",
+      "page-0004.jsonl",
+      "page-0005.jsonl",
+      "page-0006.jsonl",
+      "page-0007.jsonl",
+      "page-0008.jsonl",
+      "page-0009.jsonl",
+      "page-0010.jsonl",
+      "page-0011.jsonl",
+      "page-0012.jsonl",
+      "page-0013.jsonl"
+    ],
+    "page_limit_hit": false,
+    "pages_fetched": 13,
+    "reached_start_of_window": true,
+    "transactions_saved": 1212,
+    "window_end": 1794273111,
+    "window_end_utc": "2026-11-10T01:11:51+00:00",
+    "window_start": 1794269511,
+    "window_start_utc": "2026-11-10T00:11:51+00:00"
+  },
+  "screening_status": "QUEUED_FOR_DEEP_COLLECTION"
+}
