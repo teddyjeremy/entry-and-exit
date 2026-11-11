@@ -19,6 +19,12 @@
       "label": "positive_coin_cash_tag",
       "mint": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash",
       "outcome": "user_supplied_positive_example"
+    },
+    {
+      "label": "candidate_coin_bxwgus",
+      "mint": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump",
+      "outcome": "user_supplied_candidate",
+      "collect_curve_history": true
     }
   ]
 }
