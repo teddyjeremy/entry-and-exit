@@ -1,0 +1,23 @@
+{
+  "address": "EZbzwV8ZNbbdTQjo6M4Sb4dxmHUgMSTZWWcFE39Kpump",
+  "before_signature": "bcoR8EPX7D5VvCVzu5sUsYDd6SDCUK7bN6EQzWqkQkDnKXm96KNRzFCU7RdQD4ibWVfEb22sR7NpD94jF6URUhc",
+  "completed": true,
+  "label": "mint",
+  "page_files": [
+    "page-0001.jsonl",
+    "page-0002.jsonl",
+    "page-0003.jsonl",
+    "page-0004.jsonl",
+    "page-0005.jsonl",
+    "page-0006.jsonl",
+    "page-0007.jsonl"
+  ],
+  "page_limit_hit": false,
+  "pages_fetched": 7,
+  "reached_start_of_window": true,
+  "transactions_saved": 604,
+  "window_end": 1794275339,
+  "window_end_utc": "2026-11-10T01:48:59+00:00",
+  "window_start": 1794271739,
+  "window_start_utc": "2026-11-10T00:48:59+00:00"
+}
