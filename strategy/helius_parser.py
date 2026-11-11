@@ -1,19 +1,28 @@
 """Conservative Pump.fun bonding-curve instruction evidence parser.
 
 This module does not infer swaps from Helius labels or wallet balance deltas.
-It only recognizes explicitly supported Pump program instructions whose own
-account list contains both the configured mint and bonding-curve address.
-Unknown/legacy discriminators remain unclassified.
+It recognizes pinned Pump IDL trade instructions only when the Pump
+instruction's own account list contains both the configured mint and curve.
+Unknown instructions remain unclassified.
 """
 from __future__ import annotations
 
 PUMP_PROGRAM_ID = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
 
-# Discriminators pinned from the pump-fun/pump-public-docs IDL.
-# Expand only after reviewing the instruction name and account layout.
+# Discriminators pinned to pump-fun/pump-public-docs:
+# - legacy buy/sell and v2: commit cb188ce08b5069196eef1f3e4a0c43b70099793b
+# - v3 and exact-input variants: commit 639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22
+# The manifest in docs/PUMP_IDL_MANIFEST.json records the source blob SHAs.
 SUPPORTED_SWAP_DISCRIMINATORS = {
+    bytes([102, 6, 61, 18, 1, 218, 235, 234]): ("buy", "buy"),
+    bytes([51, 230, 133, 164, 1, 127, 131, 173]): ("sell", "sell"),
     bytes([184, 23, 238, 97, 103, 197, 211, 61]): ("buy", "buyV2"),
     bytes([93, 246, 130, 60, 231, 233, 64, 178]): ("sell", "sellV2"),
+    bytes([7, 5, 29, 196, 245, 23, 101, 80]): ("buy", "buyV3"),
+    bytes([28, 146, 222, 119, 38, 196, 105, 213]): ("sell", "sellV3"),
+    bytes([56, 252, 116, 8, 158, 223, 205, 95]): ("buy", "buyExactSolIn"),
+    bytes([194, 171, 28, 70, 104, 77, 91, 47]): ("buy", "buyExactQuoteInV2"),
+    bytes([225, 247, 80, 30, 213, 179, 132, 136]): ("buy", "buyExactQuoteInV3"),
 }
 
 
@@ -53,7 +62,8 @@ def parse_pump_fun_evidence(transaction: dict, mint: str, bonding_curve: str) ->
     """Return conservative instruction evidence; never estimate trade amounts.
 
     Helius source/type are intentionally ignored because routed Pump swaps can
-    be labelled JUPITER/OKX and non-swap records can be labelled TRANSFER.
+    be labelled JUPITER/OKX and ordinary Pump instructions can be labelled
+    TRANSFER or UNKNOWN.
     """
     if not isinstance(transaction, dict):
         raise ParseError("transaction must be an object")

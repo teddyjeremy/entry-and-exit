@@ -1,4 +1,6 @@
+import json
 import unittest
+from pathlib import Path
 
 from strategy.helius_parser import PUMP_PROGRAM_ID, parse_pump_fun_evidence
 
@@ -55,7 +57,41 @@ class HeliusParserTests(unittest.TestCase):
         result = parse_pump_fun_evidence(tx, MINT, CURVE)
         self.assertEqual(result["events"][0]["side"], "sell")
 
-    def test_unknown_legacy_discriminator_fails_closed(self):
+    def test_recognizes_actual_trencher_idl_instruction_samples(self):
+        fixture_path = Path(__file__).parent / "fixtures" / "trencher_pump_instructions.json"
+        fixtures = json.loads(fixture_path.read_text(encoding="utf-8"))
+        expected_names = {
+            "buy": ("buy", "buy"),
+            "sell": ("sell", "sell"),
+            "buy_v2": ("buy", "buyV2"),
+            "sell_v2": ("sell", "sellV2"),
+            "buy_v3": ("buy", "buyV3"),
+            "sell_v3": ("sell", "sellV3"),
+            "buy_exact_sol_in": ("buy", "buyExactSolIn"),
+            "buy_exact_quote_in_v2": ("buy", "buyExactQuoteInV2"),
+            "buy_exact_quote_in_v3": ("buy", "buyExactQuoteInV3"),
+        }
+        self.assertEqual({item["name"] for item in fixtures}, set(expected_names))
+        for item in fixtures:
+            with self.subTest(instruction=item["name"]):
+                tx = self.transaction(
+                    [{
+                        "programId": item["programId"],
+                        "data": item["data"],
+                        "accounts": item["accounts"],
+                    }],
+                    signature=item["signature"],
+                    source=item["source"],
+                    type=item["type"],
+                )
+                result = parse_pump_fun_evidence(tx, item["mint"], item["bonding_curve"])
+                self.assertEqual(result["status"], "recognized_bonding_curve_swap")
+                self.assertEqual(
+                    (result["events"][0]["side"], result["events"][0]["instruction"]),
+                    expected_names[item["name"]],
+                )
+
+    def test_unknown_discriminator_fails_closed(self):
         tx = self.transaction([pump_instruction([1, 110, 170, 139, 54, 133, 131, 79])])
         result = parse_pump_fun_evidence(tx, MINT, CURVE)
         self.assertEqual(result["status"], "unclassified_pump_instruction")

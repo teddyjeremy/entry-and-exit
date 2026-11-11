@@ -13,9 +13,9 @@ This repository is a read-only Helius research collector. It is not a trading bo
 - Add regression tests for secret redaction, short-page completion, repeated cursors, missing signatures, migrated tokens, non-Pump.fun curves, unknown market state, stale quotes/data, missing fields, and threshold failures.
 - Add a fail-closed eligibility preflight function; missing evidence and migrated/non-Pump.fun states cannot be approved.
 - Run those tests in a separate GitHub Actions workflow.
-- Add a conservative Helius Pump instruction evidence parser that recursively inspects nested router calls and recognizes only the reviewed buyV2/sellV2 instruction discriminators when the configured mint and curve appear in the same instruction.
+- Add a conservative Helius Pump instruction evidence parser that recursively inspects nested router calls and recognizes nine IDL-pinned trade variants (legacy buy/sell, v2, v3, and exact-input buys) only when the configured mint and curve appear in the same Pump instruction.
 - Add a raw-transaction audit documenting the TRENCHER sample's mixed Helius labels, duplicate signatures, incomplete collection, and parser limitations.
-- Add eight parser regression tests; latest verified parser CI run passed all 20 tests (run `43002244843`).
+- Add parser regression tests using real TRENCHER Helius instruction samples for all nine supported variants, plus a pinned Pump IDL manifest. The partial 1,000-record sample contains 976 matching trade instructions in 974 distinct signatures, all in slots before the first observed migration slot; this is not a complete token history.
 - Add portfolio admission rules: one concurrent position initially, plus one position for each $5 milestone of realized equity; a position slot is occupied until exit is confirmed.
 - Enforce one entry per mint for the lifetime of the strategy, including after exit; the pure policy rejects previously traded mints.
 - Add 11 portfolio-policy regression tests and store the policy in `config/strategy_baseline.json`.
@@ -35,7 +35,7 @@ This repository is a read-only Helius research collector. It is not a trading bo
 
 ### 2. Historical replay and strategy validation
 
-- Current parser is only an instruction-evidence gate, not a complete swap parser. The collected TRENCHER history contains legacy Pump discriminators that are deliberately left unclassified; retrieve and pin matching historical IDL versions before expanding support.
+- Current parser recognizes nine IDL-pinned trade variants but is only an instruction-evidence gate, not a complete swap parser. Decode arguments and reconcile exact SOL/quote-asset and token amounts, fees, and event/balance deltas before replay.
 - Build a deterministic parser for finalized Pump.fun bonding-curve swaps, including verified quote-asset/token balance reconciliation and trade-size accounting.
 - Identify the underlying program and curve accounts; do not classify a trade solely by the router (Jupiter/OKX/etc.).
 - Include Token and Token-2022 transfer evidence where applicable.
@@ -82,9 +82,10 @@ See `config/strategy_baseline.json`. These are experimental research filters, no
 
 - Research collector: safety fixes and regression tests added in this branch; CI passed. Real-data pagination fixtures and broader collector validation remain.
 - Eligibility preflight: implemented as a pure fail-closed gate; it still requires a trusted parser to populate its snapshot fields.
-- Pump instruction evidence parser: implemented conservatively for current buyV2/sellV2 discriminators; legacy instruction decoding and quote-asset accounting remain incomplete.
+- Pump instruction evidence parser: recognizes nine pinned legacy/v2/v3 Pump trade variants and has real Helius fixtures; argument decoding and quote-asset/token balance reconciliation remain incomplete.
 - Portfolio admission policy: implemented and tested as a pure gate; persistent ledger integration, atomic reservation, and exit-confirmation handling remain part of the paper engine.
 - Trade stake sizing: implemented and unit-tested as a pure calculation; the future paper engine must apply it using realized equity before every entry.
+- Pump IDL snapshots: pinned legacy and current public IDL revisions; commit dates are documentation snapshots, not verified on-chain activation boundaries.
 - Historical replay: not implemented.
 - Paper trading engine: not implemented.
 - Live trading: disabled and not implemented.

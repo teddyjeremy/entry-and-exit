@@ -49,6 +49,7 @@ No live trading, wallet signing, or transaction submission is performed.
 
 **Important:** this repository is still a read-only research collector. It does not implement the historical replay engine, paper execution engine, wallet signing, or live trading. `live_trading_enabled` remains `false` in the baseline configuration.
 - A fail-closed preflight gate is available in `strategy/eligibility.py`; it rejects migrated tokens, non-Pump.fun curves, missing evidence, stale observations, unavailable quotes, and threshold failures. It is not yet connected to a transaction parser or trading engine.
+- `strategy/helius_parser.py` recognizes nine pinned Pump bonding-curve trade instruction variants; the pinned public IDL revisions are recorded in `docs/PUMP_IDL_MANIFEST.json`, with real TRENCHER instruction fixtures in `tests/fixtures/`. It classifies direction only and does not yet calculate amounts, fees, or P&L.
 
 ## Portfolio limits and trade sizing (paper-strategy policy)
 

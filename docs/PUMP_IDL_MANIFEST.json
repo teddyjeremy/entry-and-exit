@@ -1,0 +1,44 @@
+{
+  "purpose": "Pinned Pump bonding-curve instruction discriminator sources for the research parser",
+  "program_id": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "upstream_repository": "https://github.com/pump-fun/pump-public-docs",
+  "idl_path": "idl/pump.json",
+  "snapshots": [
+    {
+      "label": "legacy buy/sell and v2 interface",
+      "commit": "cb188ce08b5069196eef1f3e4a0c43b70099793b",
+      "commit_date_utc": "2026-09-29T11:50:38Z",
+      "git_blob_sha": "2f1c65d4ff209d0f233c0e95552dd82873e4afb5",
+      "instructions": ["buy", "sell", "buy_v2", "sell_v2"]
+    },
+    {
+      "label": "v3 and exact-input trade interface",
+      "commit": "639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22",
+      "commit_date_utc": "2026-10-13T15:37:48Z",
+      "git_blob_sha": "bb79d04e5a4ef8b286d67511757c23a15672ef51",
+      "instructions": [
+        "buy", "sell", "buy_v2", "sell_v2",
+        "buy_v3", "sell_v3", "buy_exact_sol_in",
+        "buy_exact_quote_in_v2", "buy_exact_quote_in_v3"
+      ]
+    }
+  ],
+  "supported_swap_discriminators_hex": {
+    "buy": "66063d1201daebea",
+    "sell": "33e685a4017f83ad",
+    "buy_v2": "b817ee6167c5d33d",
+    "sell_v2": "5df6823ce7e940b2",
+    "buy_v3": "07051dc4f5176550",
+    "sell_v3": "1c92de7726c469d5",
+    "buy_exact_sol_in": "38fc74089edfcd5f",
+    "buy_exact_quote_in_v2": "c2ab1c46684d5b2f",
+    "buy_exact_quote_in_v3": "e1f7501ed5b38488"
+  },
+  "important_limitations": [
+    "Commit dates are documentation snapshot dates, not verified on-chain activation slots; do not infer instruction activation windows from them.",
+    "The parser classifies direction only. It does not decode arguments, quote-asset amounts, token amounts, fees, or realized P&L.",
+    "A recognized instruction must contain the configured mint and bonding-curve address in its own account list.",
+    "The TRENCHER sample is incomplete (10 pages, 1,000 records, 998 distinct signatures); observed instruction counts are not complete token history or profitability evidence.",
+    "The parser does not treat PumpSwap instructions as original bonding-curve swaps."
+  ]
+}
