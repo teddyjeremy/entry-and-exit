@@ -3,29 +3,29 @@
   "helius_api": "Enhanced Transactions address history + DAS getAsset",
   "page_limit": 100,
   "pages_per_mint_this_run": 10,
-  "run_finished_at": "2026-11-11T08:09:46.696821+00:00",
-  "run_started_at": "2026-11-11T08:09:22.078961+00:00",
+  "run_finished_at": "2026-11-11T08:11:41.053570+00:00",
+  "run_started_at": "2026-11-11T08:11:23.704829+00:00",
   "targets": [
     {
       "completed": false,
       "label": "failed_coin_1",
       "mint": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
-      "pages_collected": 10,
-      "transactions_collected": 1000
+      "pages_collected": 20,
+      "transactions_collected": 2000
     },
     {
       "completed": false,
       "label": "failed_coin_2",
       "mint": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
-      "pages_collected": 10,
-      "transactions_collected": 1000
+      "pages_collected": 20,
+      "transactions_collected": 2000
     },
     {
-      "completed": false,
+      "completed": true,
       "label": "failed_coin_3",
       "mint": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump",
-      "pages_collected": 10,
-      "transactions_collected": 1000
+      "pages_collected": 14,
+      "transactions_collected": 1345
     }
   ]
 }
