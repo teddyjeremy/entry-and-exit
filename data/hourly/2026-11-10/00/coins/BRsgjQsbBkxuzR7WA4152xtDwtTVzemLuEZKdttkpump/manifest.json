@@ -1,0 +1,45 @@
+{
+  "bonding_curve": "2Mu37MDojBg1wbim6Gr5ptY8yCF1aXoRvFadt5NKkpVu",
+  "collection_status": "COMPLETE",
+  "created": 1794269528,
+  "created_utc": "2026-11-10T00:12:08+00:00",
+  "creator": "D9gQ6RhKEpnobPBUdWY5bPQt2p3zGk3iVz6ChpUi2ArA",
+  "curve_history": {
+    "address": "2Mu37MDojBg1wbim6Gr5ptY8yCF1aXoRvFadt5NKkpVu",
+    "before_signature": null,
+    "completed": true,
+    "label": "bonding_curve",
+    "page_files": [
+      "page-0001.jsonl"
+    ],
+    "page_limit_hit": false,
+    "pages_fetched": 1,
+    "reached_start_of_window": true,
+    "transactions_saved": 22,
+    "window_end": 1794273128,
+    "window_end_utc": "2026-11-10T01:12:08+00:00",
+    "window_start": 1794269528,
+    "window_start_utc": "2026-11-10T00:12:08+00:00"
+  },
+  "data_cutoff": 1794273128,
+  "data_cutoff_utc": "2026-11-10T01:12:08+00:00",
+  "mint": "BRsgjQsbBkxuzR7WA4152xtDwtTVzemLuEZKdttkpump",
+  "mint_history": {
+    "address": "BRsgjQsbBkxuzR7WA4152xtDwtTVzemLuEZKdttkpump",
+    "before_signature": null,
+    "completed": true,
+    "label": "mint",
+    "page_files": [
+      "page-0001.jsonl"
+    ],
+    "page_limit_hit": false,
+    "pages_fetched": 1,
+    "reached_start_of_window": true,
+    "transactions_saved": 24,
+    "window_end": 1794273128,
+    "window_end_utc": "2026-11-10T01:12:08+00:00",
+    "window_start": 1794269528,
+    "window_start_utc": "2026-11-10T00:12:08+00:00"
+  },
+  "screening_status": "QUEUED_FOR_DEEP_COLLECTION"
+}
