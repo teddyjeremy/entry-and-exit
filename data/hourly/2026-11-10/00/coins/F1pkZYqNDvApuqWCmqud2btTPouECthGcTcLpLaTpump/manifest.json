@@ -1,0 +1,53 @@
+{
+  "bonding_curve": "GjkWU7EvN1XdSqhBM6tg64iboG91E32HPcNKW1E18Tc",
+  "collection_status": "COMPLETE",
+  "created": 1794270110,
+  "created_utc": "2026-11-10T00:21:50+00:00",
+  "creator": "FHxPnbrEh1sZxwtPSQwkfR9ZAGa9HM3cDrH1KuqxDfBh",
+  "curve_history": {
+    "address": "GjkWU7EvN1XdSqhBM6tg64iboG91E32HPcNKW1E18Tc",
+    "before_signature": "5cxjbUrMcPnc28spsiP2L9kTEHsU7fMb7iGUku8btwNz7JVBwmxMKqMfGByX6yMserc8CjpiVEhdK6MJ6M9kuWtN",
+    "completed": true,
+    "label": "bonding_curve",
+    "page_files": [
+      "page-0001.jsonl",
+      "page-0002.jsonl",
+      "page-0003.jsonl",
+      "page-0004.jsonl",
+      "page-0005.jsonl"
+    ],
+    "page_limit_hit": false,
+    "pages_fetched": 5,
+    "reached_start_of_window": true,
+    "transactions_saved": 426,
+    "window_end": 1794273710,
+    "window_end_utc": "2026-11-10T01:21:50+00:00",
+    "window_start": 1794270110,
+    "window_start_utc": "2026-11-10T00:21:50+00:00"
+  },
+  "data_cutoff": 1794273710,
+  "data_cutoff_utc": "2026-11-10T01:21:50+00:00",
+  "mint": "F1pkZYqNDvApuqWCmqud2btTPouECthGcTcLpLaTpump",
+  "mint_history": {
+    "address": "F1pkZYqNDvApuqWCmqud2btTPouECthGcTcLpLaTpump",
+    "before_signature": "2krW9Kw3viqhxTZVV3Xi1MZH1Jo7gdjhmqqSviePqWWP4cYjdCsu3a9gxZ6xbNeScu7hLU9rTV2ogiWHpcYgfRWU",
+    "completed": true,
+    "label": "mint",
+    "page_files": [
+      "page-0001.jsonl",
+      "page-0002.jsonl",
+      "page-0003.jsonl",
+      "page-0004.jsonl",
+      "page-0005.jsonl"
+    ],
+    "page_limit_hit": false,
+    "pages_fetched": 5,
+    "reached_start_of_window": true,
+    "transactions_saved": 428,
+    "window_end": 1794273710,
+    "window_end_utc": "2026-11-10T01:21:50+00:00",
+    "window_start": 1794270110,
+    "window_start_utc": "2026-11-10T00:21:50+00:00"
+  },
+  "screening_status": "QUEUED_FOR_DEEP_COLLECTION"
+}
