@@ -177,7 +177,15 @@ def collect_address_history(address: str, label: str, mint_dir: Path,
         if not reached_start:
             time.sleep(1.0)
 
-    return progress or {
+    if progress:
+        progress.update({
+            "reached_start_of_window": reached_start,
+            "completed": reached_start,
+            "page_limit_hit": not reached_start and pages_this_run >= MAX_PAGES_PER_ADDRESS,
+        })
+        write_json(progress_path, progress)
+        return progress
+    return {
         "address": address, "label": label, "window_start": launch_ts,
         "window_end": cutoff_ts, "transactions_saved": 0, "pages_fetched": 0,
         "page_files": [], "reached_start_of_window": reached_start,
