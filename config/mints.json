@@ -1,0 +1,19 @@
+{
+  "targets": [
+    {
+      "label": "failed_coin_1",
+      "mint": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
+      "outcome": "user_supplied_bad_coin"
+    },
+    {
+      "label": "failed_coin_2",
+      "mint": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
+      "outcome": "user_supplied_bad_coin"
+    },
+    {
+      "label": "failed_coin_3",
+      "mint": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump",
+      "outcome": "user_supplied_bad_coin"
+    }
+  ]
+}
