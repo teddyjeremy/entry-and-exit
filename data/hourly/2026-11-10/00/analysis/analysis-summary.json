@@ -1,0 +1,35 @@
+{
+  "analysis_scope": "COMPLETE_ONE_HOUR_HISTORIES_ONLY",
+  "cohort_date_utc": "2026-11-10",
+  "cohort_hour_utc": 0,
+  "coins_analyzed_complete_history_only": 389,
+  "coins_in_queue": 389,
+  "coins_skipped_incomplete_history": 0,
+  "coins_with_complete_raw_history": 389,
+  "curve_state_events": 56094,
+  "decoded_buy_events": 29833,
+  "decoded_sell_events": 26011,
+  "duplicate_records_across_mint_and_curve_addresses": 66159,
+  "failed_transactions": 0,
+  "files": {
+    "coin_metrics": "analysis/coin-metrics.jsonl",
+    "curve_state": "analysis/curve-state.jsonl",
+    "trade_events": "analysis/trade-events.jsonl",
+    "wallet_metrics": "analysis/wallet-metrics.jsonl"
+  },
+  "incomplete_mints_skipped": [],
+  "limitations": [
+    "This decoder uses Helius token transfers and signed token balance deltas; it does not decode Pump.fun instruction bytes.",
+    "A wallet's native balance delta may include fees, priority tips, rent, unrelated transfers, and other transaction legs; it is not asserted as trade notional.",
+    "Direct bonding-curve transfer evidence is preferred; signed token/native balance deltas are a fallback and may include non-swap activity.",
+    "Transactions that cannot be confidently classified as BUY or SELL are excluded from trade counts and reported as unclassified.",
+    "Curve-state output records relative reserve deltas and a rough implied price only when curve native and token deltas coexist; it is not a reliable post-migration market price or absolute liquidity measurement.",
+    "No historical quote simulation, slippage model, wallet-cluster attribution, realized PnL, or final BUY decision is produced."
+  ],
+  "parse_errors": 0,
+  "raw_records_read": 158844,
+  "status": "DECODED_RESEARCH_EVIDENCE_NOT_A_STRATEGY",
+  "unclassified_wallet_flows": 5773,
+  "unique_transaction_signatures": 92685,
+  "unique_wallets_in_decoded_events": 3182
+}
