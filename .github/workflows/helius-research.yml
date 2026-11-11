@@ -32,6 +32,9 @@ concurrency:
 
 jobs:
   collect:
+    # The legacy configured-mint collector must not run on manual hourly
+    # dispatches or when only the hourly pipeline is changed.
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && (contains(join(github.event.commits.*.modified, ','), 'config/mints.json') || contains(join(github.event.commits.*.added, ','), 'config/mints.json')))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -76,10 +79,9 @@ jobs:
           retention-days: 30
 
   hourly-cohort:
-    # Run the requested historical cohort on manual dispatch or when this
-    # pipeline is first introduced/updated. The six-hour collector schedule
-    # does not repeatedly re-run the historical cohort.
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(github.event.head_commit.modified, 'hourly_cohort.py') || contains(github.event.head_commit.added, 'hourly_cohort.py') || contains(github.event.head_commit.modified, '.github/workflows/helius-research.yml')))
+    # This workflow is path-filtered above. Run the hourly pipeline for changes
+    # to its own script/workflow, but not for a config/mints-only change.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(join(github.event.commits.*.modified, ','), 'hourly_cohort.py') || contains(join(github.event.commits.*.added, ','), 'hourly_cohort.py') || contains(join(github.event.commits.*.modified, ','), '.github/workflows/helius-research.yml') || contains(join(github.event.commits.*.added, ','), '.github/workflows/helius-research.yml')))
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
@@ -93,6 +95,21 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Validate hourly cohort settings
+        env:
+          COHORT_DATE: ${{ github.event.inputs.cohort_date || '2026-11-10' }}
+          COHORT_HOUR_UTC: ${{ github.event.inputs.cohort_hour_utc || '0' }}
+        run: |
+          python - <<'PY'
+          from datetime import datetime
+          import os
+          datetime.strptime(os.environ["COHORT_DATE"], "%Y-%m-%d")
+          hour = int(os.environ["COHORT_HOUR_UTC"])
+          if not 0 <= hour <= 23:
+              raise SystemExit("COHORT_HOUR_UTC must be 0..23")
+          print(f"Running {os.environ['COHORT_DATE']} hour {hour:02d}:00- {(hour + 1) % 24:02d}:00 UTC")
+          PY
 
       - name: Screen UTC launch hour and collect bounded Helius history
         env:
