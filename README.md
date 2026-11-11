@@ -39,3 +39,12 @@ The three supplied failed coins are in `config/mints.json`. Successful compariso
 The first pass scans transaction history associated with each mint address. Some Pump.fun trading activity may be more completely represented by the bonding-curve account and related accounts discovered from the creation transaction. After inspecting the first dataset, we can extend collection to those discovered accounts before drawing final rejection rules.
 
 No live trading, wallet signing, or transaction submission is performed.
+
+## Safety tests and strategy baseline
+
+- Run local regression tests with `python -m unittest discover -s tests -v`.
+- GitHub Actions runs the same tests on pushes and pull requests.
+- The agreed recommended filters are recorded in `config/strategy_baseline.json` as a paper-research baseline only.
+- Collector safety changes and remaining implementation/release gates are documented in `docs/IMPLEMENTATION_STATUS.md`.
+
+**Important:** this repository is still a read-only research collector. It does not implement the historical replay engine, paper execution engine, wallet signing, or live trading. `live_trading_enabled` remains `false` in the baseline configuration.
