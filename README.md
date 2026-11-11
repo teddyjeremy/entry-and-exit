@@ -39,3 +39,25 @@ The three supplied failed coins are in `config/mints.json`. Successful compariso
 The first pass scans transaction history associated with each mint address. Some Pump.fun trading activity may be more completely represented by the bonding-curve account and related accounts discovered from the creation transaction. After inspecting the first dataset, we can extend collection to those discovered accounts before drawing final rejection rules.
 
 No live trading, wallet signing, or transaction submission is performed.
+
+## Safety tests and strategy baseline
+
+- Run local regression tests with `python -m unittest discover -s tests -v`.
+- GitHub Actions runs the same tests on pushes and pull requests.
+- The agreed recommended filters are recorded in `config/strategy_baseline.json` as a paper-research baseline only.
+- Collector safety changes and remaining implementation/release gates are documented in `docs/IMPLEMENTATION_STATUS.md`.
+
+**Important:** this repository is still a read-only research collector. It does not implement the historical replay engine, paper execution engine, wallet signing, or live trading. `live_trading_enabled` remains `false` in the baseline configuration.
+- A fail-closed preflight gate is available in `strategy/eligibility.py`; it rejects migrated tokens, non-Pump.fun curves, missing evidence, stale observations, unavailable quotes, and threshold failures. It is not yet connected to a transaction parser or trading engine.
+- `strategy/helius_parser.py` recognizes nine pinned Pump bonding-curve trade instruction variants and validates exact IDL account positions; `strategy/helius_amounts.py` reconciles trader/curve token-balance evidence and exposes quote-side balance changes separately. Pinned IDL revisions and real TRENCHER fixtures are recorded under `docs/` and `tests/fixtures/`. No price, gross volume, or P&L calculation is implemented.
+
+## Portfolio limits and trade sizing (paper-strategy policy)
+
+- Start with at most **one concurrent open position**.
+- Increase the limit by one at each additional **$5 of realized portfolio equity**: below $5 = 1 position; $5–$9.99 = 2; $10–$14.99 = 3.
+- Unrealized gains on open positions do not increase the limit.
+- An open position keeps its slot until the exit is confirmed and reconciled; no new entry can use that slot before then.
+- A mint can be entered **only once ever**. Exiting does not make that mint eligible again.
+- Starting from the configured $2.70 portfolio and $1.00 stake, increase the stake by **50% for every full doubling** of realized equity: $2.70 → $1.00; $5.40 → $1.50; $10.80 → $2.25; $21.60 → $3.38.
+- Cap each trade at **$100**, and never stake more than available realized equity. Stake tiers and concurrent-position tiers are independent.
+- Pure policies are in `strategy/portfolio_rules.py`; persistent ledger and atomic reservation integration are still required in the future paper engine.

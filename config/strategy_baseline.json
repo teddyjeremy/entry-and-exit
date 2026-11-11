@@ -1,0 +1,70 @@
+{
+  "profile": "recommended",
+  "purpose": "paper_research_baseline_only",
+  "live_trading_enabled": false,
+  "market_filters": {
+    "minimum_market_cap_usd": 5000,
+    "minimum_real_bonding_curve_sol_reserves": 5,
+    "minimum_volume_sol_rolling_30_seconds": 5,
+    "minimum_unique_buyers_rolling_30_seconds": 15
+  },
+  "execution_guards": {
+    "maximum_entry_price_impact_percent": 2,
+    "maximum_exit_price_impact_percent": 2,
+    "maximum_round_trip_cost_percent": 4,
+    "require_fresh_buy_quote": true,
+    "require_fresh_sell_quote_for_full_position": true,
+    "reject_if_migrated": true,
+    "require_original_pump_fun_bonding_curve": true,
+    "reject_if_market_state_unknown": true,
+    "reject_if_rpc_data_stale": true
+  },
+  "notes": [
+    "These thresholds are experimental filters, not evidence of profitability.",
+    "Market cap must be calculated consistently from circulating supply and price.",
+    "Liquidity means real bonding-curve SOL reserves, never virtual reserves.",
+    "Volume and unique buyers must be deduplicated by finalized transaction signature and wallet.",
+    "A Jupiter or other router is not itself proof of a non-Pump.fun launch; inspect the underlying program and bonding-curve accounts.",
+    "This file is a documented baseline only; the current repository collector does not execute this strategy."
+  ],
+  "freshness": {
+    "maximum_rpc_data_age_seconds": 2,
+    "maximum_signal_age_seconds": 2,
+    "maximum_quote_age_seconds": 2
+  },
+  "portfolio_rules": {
+    "starting_max_concurrent_positions": 1,
+    "realized_equity_milestone_usd": 5,
+    "additional_positions_per_milestone": 1,
+    "equity_basis": "realized_equity_only",
+    "maximum_concurrent_positions_formula": "starting_max_concurrent_positions + floor(realized_portfolio_usd / realized_equity_milestone_usd)",
+    "one_entry_per_mint_lifetime": true,
+    "reentry_after_exit_allowed": false,
+    "slot_released_only_after_confirmed_exit": true,
+    "notes": [
+      "Examples: below $5 realized equity = 1 open position; $5 to below $10 = 2; $10 to below $15 = 3.",
+      "The $5 milestones follow the user's explicit $5/$10 examples; they are not a claim that each account doubling is exactly $5.",
+      "Do not count unrealized mark-to-market gains when increasing position capacity.",
+      "An open position occupies a slot until its exit is confirmed and reconciled.",
+      "A mint is permanently blocked from another entry after its first entry, including after a full exit.",
+      "Persist the set of previously traded mints in the durable trade ledger and reserve entry atomically before submitting an order."
+    ]
+  },
+  "trade_sizing": {
+    "equity_basis": "realized_equity_only",
+    "starting_portfolio_usd": 2.70,
+    "starting_trade_stake_usd": 1.00,
+    "stake_multiplier_per_portfolio_doubling": 1.50,
+    "maximum_trade_stake_usd": 100.00,
+    "formula": "min(maximum_trade_stake_usd, starting_trade_stake_usd * 1.5 ^ floor(log2(realized_portfolio_usd / starting_portfolio_usd)))",
+    "stake_must_not_exceed_available_equity": true,
+    "notes": [
+      "The initial $2.70 portfolio and $1.00 trade stake are the current paper-research starting assumptions; change them together if the starting balance changes.",
+      "Increase the stake only after each full doubling of realized portfolio equity; partial growth does not advance the tier.",
+      "At $2.70 stake $1.00; at $5.40 stake $1.50; at $10.80 stake $2.25; at $21.60 stake $3.38.",
+      "The stake is capped at $100 and is also capped by available realized equity.",
+      "This stake tier is independent of the $5 milestones that control the number of concurrent positions.",
+      "Do not use unrealized open-position gains to increase the stake."
+    ]
+  }
+}
