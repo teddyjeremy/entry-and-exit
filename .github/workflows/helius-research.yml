@@ -11,9 +11,20 @@ on:
         description: UTC launch hour (0-23)
         required: false
         default: "0"
+      repair_incomplete:
+        description: Resume histories marked incomplete and then decode the cohort
+        required: false
+        type: boolean
+        default: true
   push:
     paths:
       - "hourly_cohort.py"
+  pull_request:
+    paths:
+      - "hourly_cohort.py"
+      - "analyze_hourly_cohort.py"
+      - "tests/**"
+      - ".github/workflows/helius-research.yml"
   schedule:
     - cron: "17 */6 * * *"
 
@@ -25,6 +36,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Compile and test research scripts
+        run: |
+          python -m py_compile hourly_cohort.py analyze_hourly_cohort.py
+          python -m unittest discover -s tests -v
+
   collect:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
@@ -67,7 +92,9 @@ jobs:
           retention-days: 30
 
   hourly-cohort:
-    if: github.event_name != 'schedule'
+    # The collector commits checkpointed data directly to main. Do not run
+    # this job on feature branches or it could bypass the PR by pushing to main.
+    if: github.event_name != 'schedule' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
@@ -78,6 +105,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - name: Test decoder and compile research scripts
+        run: |
+          python -m py_compile hourly_cohort.py analyze_hourly_cohort.py
+          python -m unittest discover -s tests -v
       - name: Validate cohort settings
         env:
           COHORT_DATE: ${{ github.event.inputs.cohort_date || '2026-11-10' }}
@@ -102,6 +133,7 @@ jobs:
           COHORT_HOUR_UTC: ${{ github.event.inputs.cohort_hour_utc || '0' }}
           MAX_PAGES_PER_ADDRESS: "20"
           BATCH_SIZE: "5"
+          REPAIR_INCOMPLETE: ${{ github.event.inputs.repair_incomplete || '1' }}
           MIN_BUYERS_10S: "5"
           MAX_BUNDLE_SHARE: "0.20"
         shell: bash
@@ -124,6 +156,11 @@ jobs:
               git rebase origin/main
               git push origin HEAD:main
             fi
+            if [ "$rc" -eq 75 ]; then
+              echo "Helius is still rate-limiting requests; pausing 180 seconds before resuming from the committed cursor."
+              sleep 180
+              continue
+            fi
             if [ "$rc" -ne 0 ] && [ "$rc" -ne 10 ]; then
               exit "$rc"
             fi
@@ -131,6 +168,11 @@ jobs:
               break
             fi
           done
+      - name: Decode raw token flows and produce cohort audit
+        env:
+          COHORT_DATE: ${{ github.event.inputs.cohort_date || '2026-11-10' }}
+          COHORT_HOUR_UTC: ${{ github.event.inputs.cohort_hour_utc || '0' }}
+        run: python analyze_hourly_cohort.py
       - name: Upload completed hourly cohort snapshot
         uses: actions/upload-artifact@v4
         with:

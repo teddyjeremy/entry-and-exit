@@ -35,6 +35,10 @@ SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "entry-and-exit-hourly-research/2.0"})
 
 
+class HeliusRateLimitError(RuntimeError):
+    """Temporary provider throttling; the workflow should pause and retry."""
+
+
 def utc_iso(ts: int) -> str:
     return datetime.fromtimestamp(ts, timezone.utc).isoformat()
 
@@ -53,21 +57,36 @@ def append_jsonl(path: Path, payload: Any) -> None:
 
 
 def get_json(url: str, params: dict[str, Any] | None = None) -> Any:
-    for attempt in range(10):
+    rate_limit_attempts = 0
+    server_attempts = 0
+    while True:
         response = SESSION.get(url, params=params, timeout=TIMEOUT)
-        if response.status_code == 429 or response.status_code >= 500:
+        if response.status_code == 429:
+            rate_limit_attempts += 1
+            if rate_limit_attempts >= 6:
+                raise HeliusRateLimitError(
+                    f"Helius rate limit persisted after {rate_limit_attempts} attempts; "
+                    "checkpoint local progress and let the workflow cool down."
+                )
             retry_after = response.headers.get("Retry-After")
             try:
-                delay = float(retry_after) if retry_after else min(2 ** attempt, 60)
+                delay = float(retry_after) if retry_after else min(15 * (2 ** (rate_limit_attempts - 1)), 300)
             except ValueError:
-                delay = min(2 ** attempt, 60)
-            delay = min(max(delay, 1), 120)
-            print(f"HTTP {response.status_code}; retrying in {delay:g}s (attempt {attempt + 1}/10)", flush=True)
+                delay = min(15 * (2 ** (rate_limit_attempts - 1)), 300)
+            delay = min(max(delay, 5), 600)
+            print(f"Helius HTTP 429; cooling down {delay:g}s (attempt {rate_limit_attempts}/6)", flush=True)
+            time.sleep(delay)
+            continue
+        if response.status_code >= 500:
+            server_attempts += 1
+            if server_attempts >= 6:
+                response.raise_for_status()
+            delay = min(5 * (2 ** (server_attempts - 1)), 120)
+            print(f"Helius HTTP {response.status_code}; retrying in {delay:g}s (attempt {server_attempts}/6)", flush=True)
             time.sleep(delay)
             continue
         response.raise_for_status()
         return response.json()
-    raise RuntimeError(f"Request failed after 10 retries: {url}")
 
 
 def classify_coin(coin: dict[str, Any]) -> tuple[str, str | None]:
@@ -112,11 +131,13 @@ def collect_address_history(address: str, label: str, mint_dir: Path,
 
     before = progress.get("before_signature")
     pages_fetched = int(progress.get("pages_fetched", 0))
+    pages_this_run = 0
     saved = int(progress.get("transactions_saved", 0))
     reached_start = bool(progress.get("reached_start_of_window", False))
     page_files = list(progress.get("page_files", []))
 
-    while not reached_start and pages_fetched < MAX_PAGES_PER_ADDRESS:
+    # The page limit applies per invocation; future runs resume from the cursor.
+    while not reached_start and pages_this_run < MAX_PAGES_PER_ADDRESS:
         params: dict[str, Any] = {
             "api-key": HELIUS_API_KEY,
             "limit": PAGE_SIZE,
@@ -133,6 +154,7 @@ def collect_address_history(address: str, label: str, mint_dir: Path,
             break
 
         pages_fetched += 1
+        pages_this_run += 1
         in_window = []
         times = []
         for record in records:
@@ -168,13 +190,21 @@ def collect_address_history(address: str, label: str, mint_dir: Path,
             "page_files": page_files, "before_signature": before,
             "reached_start_of_window": reached_start,
             "completed": reached_start,
-            "page_limit_hit": not reached_start and pages_fetched >= MAX_PAGES_PER_ADDRESS,
+            "page_limit_hit": not reached_start and pages_this_run >= MAX_PAGES_PER_ADDRESS,
         }
         write_json(progress_path, progress)
         if not reached_start:
             time.sleep(1.0)
 
-    return progress or {
+    if progress:
+        progress.update({
+            "reached_start_of_window": reached_start,
+            "completed": reached_start,
+            "page_limit_hit": not reached_start and pages_this_run >= MAX_PAGES_PER_ADDRESS,
+        })
+        write_json(progress_path, progress)
+        return progress
+    return {
         "address": address, "label": label, "window_start": launch_ts,
         "window_end": cutoff_ts, "transactions_saved": 0, "pages_fetched": 0,
         "page_files": [], "reached_start_of_window": reached_start,
@@ -316,12 +346,27 @@ def main() -> int:
     checkpoint_path = cohort_dir / "checkpoint.json"
     checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8")) if checkpoint_path.exists() else {"next_index": 0}
     next_index = int(checkpoint.get("next_index", 0))
-    end_index = min(next_index + BATCH_SIZE, len(candidates))
-    print(f"Cohort: {DAY} {HOUR:02d}:00 UTC | selected: {len(candidates)} | processing {next_index + 1 if next_index < end_index else next_index}/{len(candidates)} through {end_index}", flush=True)
+    repair_mode = os.environ.get("REPAIR_INCOMPLETE", "0").strip().lower() in {"1", "true", "yes"}
+    if repair_mode:
+        work_items = []
+        for i, candidate in enumerate(candidates):
+            manifest_path = cohort_dir / "coins" / candidate["mint"] / "manifest.json"
+            try:
+                old_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                old_manifest = {}
+            if old_manifest.get("collection_status") != "COMPLETE":
+                work_items.append((i, candidate))
+        work_items = work_items[:BATCH_SIZE]
+        end_index = next_index
+        print(f"REPAIR mode: processing {len(work_items)} incomplete coins of {len(candidates)}", flush=True)
+    else:
+        end_index = min(next_index + BATCH_SIZE, len(candidates))
+        work_items = [(i, candidates[i]) for i in range(next_index, end_index)]
+        print(f"Cohort: {DAY} {HOUR:02d}:00 UTC | selected: {len(candidates)} | processing {next_index + 1 if next_index < end_index else next_index}/{len(candidates)} through {end_index}", flush=True)
 
     manifests = []
-    for i in range(next_index, end_index):
-        coin = candidates[i]
+    for i, coin in work_items:
         mint = coin["mint"]
         launch_ts = int(coin["created"])
         cutoff_ts = launch_ts + 3600
@@ -346,29 +391,56 @@ def main() -> int:
         }
         write_json(mint_dir / "manifest.json", manifest)
         manifests.append(manifest)
-        checkpoint = {"next_index": i + 1, "candidate_count": len(candidates),
-                      "completed_this_batch": len(manifests), "updated_at_utc": datetime.now(timezone.utc).isoformat()}
-        write_json(checkpoint_path, checkpoint)
+        if not repair_mode:
+            checkpoint = {"next_index": i + 1, "candidate_count": len(candidates),
+                          "completed_this_batch": len(manifests), "updated_at_utc": datetime.now(timezone.utc).isoformat()}
+            write_json(checkpoint_path, checkpoint)
 
-    remaining = end_index < len(candidates)
+    complete_count = 0
+    incomplete_mints = []
+    for candidate in candidates:
+        manifest_path = cohort_dir / "coins" / candidate["mint"] / "manifest.json"
+        try:
+            current_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            current_manifest = {}
+        if current_manifest.get("collection_status") == "COMPLETE":
+            complete_count += 1
+        else:
+            incomplete_mints.append(candidate["mint"])
+    remaining = bool(incomplete_mints) if repair_mode else end_index < len(candidates)
+    processed_count = len(candidates) - len(incomplete_mints) if repair_mode else end_index
+    summary_next_index = len(candidates) if repair_mode and not remaining else end_index
+    if repair_mode and not remaining:
+        write_json(checkpoint_path, {
+            "next_index": len(candidates), "candidate_count": len(candidates),
+            "completed_this_batch": len(manifests),
+            "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+        })
     write_json(cohort_dir / "collection-summary.json", {
         "date_utc": DAY, "hour_utc": HOUR, "selected_for_deep_collection": len(candidates),
-        "processed_candidates": end_index, "remaining_candidates": len(candidates) - end_index,
-        "coins_with_complete_history": sum(1 for c in candidates[:end_index]
-            if (cohort_dir / "coins" / c["mint"] / "manifest.json").exists()
-            and json.loads((cohort_dir / "coins" / c["mint"] / "manifest.json").read_text()).get("collection_status") == "COMPLETE"),
-        "batch_size": BATCH_SIZE, "next_index": end_index,
+        "processed_candidates": processed_count, "remaining_candidates": len(incomplete_mints) if repair_mode else len(candidates) - end_index,
+        "coins_with_complete_history": complete_count,
+        "incomplete_coin_count": len(incomplete_mints), "incomplete_mints": incomplete_mints,
+        "repair_mode": repair_mode,
+        "batch_size": BATCH_SIZE, "next_index": summary_next_index,
         "data_window_rule": "Only transactions with timestamps from launch through launch+3600 seconds inclusive are saved.",
         "limitation": "Raw address transactions are not yet decoded into swaps/trades; no PnL or final entry decision is produced.",
         "complete": not remaining,
     })
-    print(json.dumps({"launches_selected": len(candidates), "processed": end_index,
-                      "remaining": len(candidates) - end_index, "output": str(cohort_dir.relative_to(ROOT))}, indent=2))
+    print(json.dumps({"launches_selected": len(candidates), "processed": processed_count,
+                      "complete_histories": complete_count, "incomplete_histories": len(incomplete_mints),
+                      "remaining": len(incomplete_mints) if repair_mode else len(candidates) - end_index,
+                      "output": str(cohort_dir.relative_to(ROOT))}, indent=2))
     return 10 if remaining else 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except HeliusRateLimitError as exc:
+        print(str(exc), file=sys.stderr, flush=True)
+        raise SystemExit(75)
 
 # Trigger the corrected resumable cohort workflow after merge.
 
