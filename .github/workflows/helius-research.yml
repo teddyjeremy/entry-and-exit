@@ -7,6 +7,10 @@ on:
         description: Maximum new Helius history pages to collect per mint in this run
         required: false
         default: "10"
+  push:
+    paths:
+      - "config/mints.json"
+      - ".github/workflows/helius-research.yml"
   schedule:
     - cron: "17 */6 * * *"
 
