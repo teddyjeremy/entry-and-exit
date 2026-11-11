@@ -362,3 +362,5 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 # Trigger the corrected resumable cohort workflow after merge.
+
+# Ensure a newly merged run exercises latest-main checkpoint sync.
