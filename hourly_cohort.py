@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-"""Build one UTC launch-hour cohort and collect only its first hour of Helius history.
+"""Build a UTC launch-hour cohort and collect at most each coin's first hour.
 
-The first pass is deliberately a shortlist, not a final BUY decision:
-- at least 3 distinct first-10-second buyers
-- first-10-second buyers retained <=35% of supply
-
-Every launch is retained in the cohort ledger with a rejection/shortlist reason.
-Detailed Helius history is collected only for shortlisted mints, for the interval
-[created, created + 3600] and never beyond that interval.
+This is a research collector, not a trading bot. The initial rules only create
+REJECTED / WATCH / SHORTLISTED records; no record is a BUY recommendation.
 """
 from __future__ import annotations
 
@@ -18,7 +13,6 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode
 
 import requests
 from solders.pubkey import Pubkey
@@ -36,7 +30,7 @@ PAGE_SIZE = 100
 TIMEOUT = 45
 BASE = "https://api-mainnet.helius-rpc.com/v0"
 SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "entry-and-exit-hourly-research/1.0"})
+SESSION.headers.update({"User-Agent": "entry-and-exit-hourly-research/1.1"})
 
 
 def utc_iso(ts: int) -> str:
@@ -69,6 +63,29 @@ def get_json(url: str, params: dict[str, Any] | None = None) -> Any:
     raise RuntimeError(f"Request failed after retries: {url}")
 
 
+def classify_coin(coin: dict[str, Any]) -> tuple[str, str | None]:
+    """Return an auditable first-pass status and reason."""
+    try:
+        buyers = int(coin.get("buyers_first_10s") or 0)
+    except (TypeError, ValueError):
+        buyers = 0
+    if buyers < MIN_BUYERS_10S:
+        return "REJECTED", "INSUFFICIENT_FIRST_10S_BUYERS"
+
+    bundle = coin.get("bundle_supply_share")
+    if bundle is None:
+        return "WATCH", "MISSING_BUNDLE_EVIDENCE"
+    try:
+        bundle_share = float(bundle)
+    except (TypeError, ValueError):
+        return "WATCH", "INVALID_BUNDLE_EVIDENCE"
+    if not 0 <= bundle_share <= 1:
+        return "WATCH", "INVALID_BUNDLE_EVIDENCE"
+    if bundle_share > MAX_BUNDLE_SHARE:
+        return "REJECTED", "HIGH_EARLY_SUPPLY_CONCENTRATION"
+    return "SHORTLISTED_FOR_DEEP_COLLECTION", None
+
+
 def derive_curve(mint: str) -> str:
     mint_key = Pubkey.from_string(mint)
     curve, _ = Pubkey.find_program_address(
@@ -84,11 +101,13 @@ def collect_address_history(address: str, label: str, mint_dir: Path,
     manifest_path = out / "manifest.json"
     if manifest_path.exists():
         old = json.loads(manifest_path.read_text(encoding="utf-8"))
-        if old.get("completed") and old.get("window_start") == launch_ts and old.get("window_end") == cutoff_ts:
+        if (old.get("completed")
+                and old.get("window_start") == launch_ts
+                and old.get("window_end") == cutoff_ts):
             return old
 
     before = None
-    page = 0
+    pages_fetched = 0
     saved = 0
     reached_start = False
     page_files: list[str] = []
@@ -101,31 +120,34 @@ def collect_address_history(address: str, label: str, mint_dir: Path,
         }
         if before:
             params["before-signature"] = before
-        url = f"{BASE}/addresses/{address}/transactions"
-        records = get_json(url, params)
+        records = get_json(f"{BASE}/addresses/{address}/transactions", params)
         if not isinstance(records, list):
             raise RuntimeError(f"Unexpected Helius response for {address}: {records!r}")
         if not records:
             reached_start = True
             break
+        pages_fetched += 1
 
         in_window = []
         times = []
         for record in records:
             ts = record.get("timestamp")
             if isinstance(ts, (int, float)):
-                times.append(int(ts))
-                if launch_ts <= int(ts) <= cutoff_ts:
+                ts = int(ts)
+                times.append(ts)
+                if launch_ts <= ts <= cutoff_ts:
                     in_window.append(record)
+
         if in_window:
-            page += 1
-            page_name = f"page-{page:04d}.jsonl"
+            page_name = f"page-{pages_fetched:04d}.jsonl"
             with (out / page_name).open("w", encoding="utf-8") as f:
                 for item in in_window:
                     f.write(json.dumps(item, separators=(",", ":"), sort_keys=True) + "\n")
             page_files.append(page_name)
             saved += len(in_window)
 
+        # Helius is requested newest-first; once a page reaches before launch,
+        # older pages cannot contain any more records in this coin's window.
         if times and min(times) < launch_ts:
             reached_start = True
             break
@@ -145,11 +167,12 @@ def collect_address_history(address: str, label: str, mint_dir: Path,
         "window_end": cutoff_ts,
         "window_end_utc": utc_iso(cutoff_ts),
         "transactions_saved": saved,
-        "pages_saved": len(page_files),
+        "pages_fetched": pages_fetched,
+        "pages_with_window_transactions": len(page_files),
         "page_files": page_files,
         "reached_start_of_window": reached_start,
         "completed": reached_start,
-        "page_limit_hit": not reached_start and len(page_files) >= MAX_PAGES_PER_ADDRESS,
+        "page_limit_hit": not reached_start and pages_fetched >= MAX_PAGES_PER_ADDRESS,
     }
     write_json(manifest_path, result)
     return result
@@ -167,20 +190,21 @@ def main() -> int:
     if not HELIUS_API_KEY:
         print("HELIUS_API_KEY is not set", file=sys.stderr)
         return 2
+    if MAX_PAGES_PER_ADDRESS < 1:
+        print("MAX_PAGES_PER_ADDRESS must be at least 1", file=sys.stderr)
+        return 2
 
     start_ts = int(day_dt.timestamp()) + HOUR * 3600
     end_ts = start_ts + 3600
     cohort_dir = DATA_ROOT / DAY / f"{HOUR:02d}"
     cohort_dir.mkdir(parents=True, exist_ok=True)
 
-    url = f"https://pumpdata.fun/launches/{DAY}.json"
-    dataset = get_json(url)
+    dataset = get_json(f"https://pumpdata.fun/launches/{DAY}.json")
     columns = dataset.get("columns", [])
     rows = dataset.get("launches", [])
     if not columns or not isinstance(rows, list):
         raise RuntimeError("Unexpected pumpdata launch dataset schema")
     index = {name: i for i, name in enumerate(columns)}
-
     required = ["mint", "created", "creator", "buyers_first_10s", "bundle_supply_share"]
     missing = [name for name in required if name not in index]
     if missing:
@@ -188,8 +212,13 @@ def main() -> int:
 
     hour_launches = []
     for row in rows:
+        if not isinstance(row, list) or len(row) != len(columns):
+            continue
         coin = dict(zip(columns, row))
-        created = int(coin["created"])
+        try:
+            created = int(coin["created"])
+        except (TypeError, ValueError):
+            continue
         if start_ts <= created < end_ts:
             hour_launches.append(coin)
     hour_launches.sort(key=lambda x: (int(x["created"]), x["mint"]))
@@ -197,65 +226,56 @@ def main() -> int:
     ledger_path = cohort_dir / "cohort.jsonl"
     if ledger_path.exists():
         ledger_path.unlink()
-    shortlist = []
-    rejection_counts: dict[str, int] = {}
+    candidates: list[tuple[dict[str, Any], str]] = []
+    counts: dict[str, int] = {}
     for coin in hour_launches:
-        buyers = int(coin.get("buyers_first_10s") or 0)
-        bundle = coin.get("bundle_supply_share")
-        reason = None
-        if buyers < MIN_BUYERS_10S:
-            reason = "INSUFFICIENT_FIRST_10S_BUYERS"
-        elif bundle is None:
-            reason = "MISSING_BUNDLE_EVIDENCE"
-        elif float(bundle) > MAX_BUNDLE_SHARE:
-            reason = "HIGH_EARLY_SUPPLY_CONCENTRATION"
-
-        status = "REJECTED" if reason else "SHORTLISTED_FOR_DEEP_COLLECTION"
+        status, reason = classify_coin(coin)
+        launch_ts = int(coin["created"])
         record = {
             **coin,
             "cohort_date_utc": DAY,
             "cohort_hour_utc": HOUR,
-            "launch_time_utc": utc_iso(int(coin["created"])),
-            "collection_window_start_utc": utc_iso(int(coin["created"])),
-            "collection_window_end_utc": utc_iso(int(coin["created"]) + 3600),
+            "launch_time_utc": utc_iso(launch_ts),
+            "collection_window_start_utc": utc_iso(launch_ts),
+            "collection_window_end_utc": utc_iso(launch_ts + 3600),
             "status": status,
             "rejection_reason": reason,
             "final_entry_decision": "NOT_EVALUATED",
         }
         append_jsonl(ledger_path, record)
-        if reason:
-            rejection_counts[reason] = rejection_counts.get(reason, 0) + 1
-        else:
-            shortlist.append(coin)
+        counts[status] = counts.get(status, 0) + 1
+        # WATCH rows are collected too, so missing/invalid evidence can be
+        # investigated rather than silently discarded.
+        if status in ("SHORTLISTED_FOR_DEEP_COLLECTION", "WATCH"):
+            candidates.append((coin, status))
 
     write_json(cohort_dir / "cohort-summary.json", {
         "date_utc": DAY,
         "hour_utc": HOUR,
         "window_start_utc": utc_iso(start_ts),
-        "window_end_utc": utc_iso(end_ts),
+        "window_end_utc_exclusive": utc_iso(end_ts),
         "dataset_complete": dataset.get("complete"),
         "dataset_complete_to": dataset.get("complete_to"),
         "launches_in_hour": len(hour_launches),
-        "shortlisted_for_deep_collection": len(shortlist),
-        "rejected": len(hour_launches) - len(shortlist),
-        "rejection_counts": rejection_counts,
-        "shortlist_rules": {
-            "minimum_distinct_buyers_first_10s": MIN_BUYERS_10S,
-            "maximum_first_10s_supply_share": MAX_BUNDLE_SHARE,
+        "status_counts": counts,
+        "coins_selected_for_deep_collection": len(candidates),
+        "screening_rules": {
+            "minimum_buyers_first_10s": MIN_BUYERS_10S,
+            "maximum_bundle_supply_share": MAX_BUNDLE_SHARE,
+            "missing_or_invalid_bundle_evidence": "WATCH, not REJECTED",
         },
-        "important": "SHORTLISTED is not a BUY signal. Full entry rules require trade-level evidence.",
+        "important": "SHORTLISTED and WATCH are research states, not BUY signals. Full entry rules are not evaluated here.",
     })
 
-    # Only shortlisted coins incur detailed Helius collection.
     manifests = []
-    for number, coin in enumerate(shortlist, start=1):
+    for number, (coin, screening_status) in enumerate(candidates, start=1):
         mint = coin["mint"]
         launch_ts = int(coin["created"])
         cutoff_ts = launch_ts + 3600
         mint_dir = cohort_dir / "coins" / mint
         mint_dir.mkdir(parents=True, exist_ok=True)
         curve = derive_curve(mint)
-        print(f"[{number}/{len(shortlist)}] collecting {mint}", flush=True)
+        print(f"[{number}/{len(candidates)}] {screening_status}: collecting {mint}", flush=True)
         mint_result = collect_address_history(mint, "mint", mint_dir, launch_ts, cutoff_ts)
         curve_result = collect_address_history(curve, "bonding_curve", mint_dir, launch_ts, cutoff_ts)
         manifest = {
@@ -263,6 +283,7 @@ def main() -> int:
             "creator": coin.get("creator"),
             "created": launch_ts,
             "created_utc": utc_iso(launch_ts),
+            "screening_status": screening_status,
             "data_cutoff": cutoff_ts,
             "data_cutoff_utc": utc_iso(cutoff_ts),
             "bonding_curve": curve,
@@ -276,17 +297,17 @@ def main() -> int:
     write_json(cohort_dir / "collection-summary.json", {
         "date_utc": DAY,
         "hour_utc": HOUR,
-        "shortlisted": len(shortlist),
+        "selected_for_deep_collection": len(candidates),
         "coins_with_complete_history": sum(x["collection_status"] == "COMPLETE" for x in manifests),
         "coins_with_incomplete_history": sum(x["collection_status"] != "COMPLETE" for x in manifests),
         "history_manifests": manifests,
-        "data_window_rule": "For each mint, include only timestamps from created through created+3600 seconds, inclusive.",
-        "limitation": "Mint and bonding-curve address histories are raw evidence; trade decoding and full entry/exit replay are a subsequent analysis stage.",
+        "data_window_rule": "Only timestamps from each coin's created timestamp through created+3600 seconds, inclusive, are written.",
+        "limitation": "Raw mint and bonding-curve address histories are not decoded into trades here. No PnL or final entry decision is produced.",
     })
     print(json.dumps({
         "hour_launches": len(hour_launches),
-        "shortlisted": len(shortlist),
-        "rejected": len(hour_launches) - len(shortlist),
+        "status_counts": counts,
+        "selected_for_deep_collection": len(candidates),
         "output": str(cohort_dir.relative_to(ROOT)),
     }, indent=2))
     return 0
