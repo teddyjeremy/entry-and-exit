@@ -19,6 +19,12 @@ on:
   push:
     paths:
       - "hourly_cohort.py"
+  pull_request:
+    paths:
+      - "hourly_cohort.py"
+      - "analyze_hourly_cohort.py"
+      - "tests/**"
+      - ".github/workflows/helius-research.yml"
   schedule:
     - cron: "17 */6 * * *"
 
@@ -30,6 +36,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Compile and test research scripts
+        run: |
+          python -m py_compile hourly_cohort.py analyze_hourly_cohort.py
+          python -m unittest discover -s tests -v
+
   collect:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
