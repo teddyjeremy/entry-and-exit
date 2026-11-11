@@ -445,3 +445,4 @@ if __name__ == "__main__":
 # Trigger the corrected resumable cohort workflow after merge.
 
 # Ensure a newly merged run exercises latest-main checkpoint sync.
+# Keep the main-branch repair and decode pipeline triggerable after decoder refinements.
