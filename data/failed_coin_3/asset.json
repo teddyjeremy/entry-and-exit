@@ -1,0 +1,88 @@
+{
+  "collected_at": "2026-11-11T08:09:35.451832+00:00",
+  "mint": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump",
+  "response": {
+    "id": "entry-and-exit-research",
+    "jsonrpc": "2.0",
+    "result": {
+      "authorities": [],
+      "burnt": false,
+      "compression": {
+        "asset_hash": "",
+        "compressed": false,
+        "creator_hash": "",
+        "data_hash": "",
+        "eligible": false,
+        "leaf_id": 0,
+        "seq": 0,
+        "tree": ""
+      },
+      "content": {
+        "$schema": "https://schema.metaplex.com/nft1.0.json",
+        "files": [
+          {
+            "cdn_uri": "https://cdn.helius-rpc.com/cdn-cgi/image//https://ipfs.io/ipfs/bafkreigb7eqgjpentij674ujwkuuhojgg3fxogm6grax234j7p2gbxmsnu",
+            "mime": "image/png",
+            "uri": "https://ipfs.io/ipfs/bafkreigb7eqgjpentij674ujwkuuhojgg3fxogm6grax234j7p2gbxmsnu"
+          }
+        ],
+        "json_uri": "https://ipfs.io/ipfs/QmTkB86aLgSLY3P6jvbdqxviDBbLaTDBH1pfipqMdgffVr",
+        "links": {
+          "image": "https://ipfs.io/ipfs/bafkreigb7eqgjpentij674ujwkuuhojgg3fxogm6grax234j7p2gbxmsnu"
+        },
+        "metadata": {
+          "description": "Be A \u2606",
+          "json_name": "Rock\u2606",
+          "name": "Rock\u2606",
+          "symbol": "Rock\u2606"
+        }
+      },
+      "creators": [],
+      "grouping": [],
+      "id": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump",
+      "interface": "FungibleToken",
+      "last_indexed_slot": 468051055,
+      "mint_extensions": {
+        "metadata": {
+          "additional_metadata": [],
+          "mint": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump",
+          "name": "Rock\u2606",
+          "symbol": "Rock\u2606",
+          "update_authority": null,
+          "uri": "https://ipfs.io/ipfs/QmTkB86aLgSLY3P6jvbdqxviDBbLaTDBH1pfipqMdgffVr"
+        },
+        "metadata_pointer": {
+          "authority": null,
+          "metadata_address": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump"
+        }
+      },
+      "mutable": true,
+      "ownership": {
+        "delegate": null,
+        "delegated": false,
+        "frozen": false,
+        "owner": "",
+        "ownership_model": "token"
+      },
+      "royalty": {
+        "basis_points": 0,
+        "locked": false,
+        "percent": 0.0,
+        "primary_sale_happened": false,
+        "royalty_model": "creators",
+        "target": null
+      },
+      "supply": null,
+      "token_info": {
+        "decimals": 6,
+        "price_info": {
+          "currency": "USDC",
+          "price_per_token": 0.00015651376
+        },
+        "supply": 2000000000000000,
+        "symbol": "Rock\u2606",
+        "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+      }
+    }
+  }
+}

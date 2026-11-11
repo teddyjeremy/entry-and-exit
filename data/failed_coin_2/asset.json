@@ -1,0 +1,88 @@
+{
+  "collected_at": "2026-11-11T08:09:27.116239+00:00",
+  "mint": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
+  "response": {
+    "id": "entry-and-exit-research",
+    "jsonrpc": "2.0",
+    "result": {
+      "authorities": [],
+      "burnt": false,
+      "compression": {
+        "asset_hash": "",
+        "compressed": false,
+        "creator_hash": "",
+        "data_hash": "",
+        "eligible": false,
+        "leaf_id": 0,
+        "seq": 0,
+        "tree": ""
+      },
+      "content": {
+        "$schema": "https://schema.metaplex.com/nft1.0.json",
+        "files": [
+          {
+            "cdn_uri": "https://cdn.helius-rpc.com/cdn-cgi/image//https://gateway.pinata.cloud/ipfs/bafkreicqjieltmg6wqebwcm5u54f2ims2duedfxdb6dbv5q7nhrjptgc44",
+            "mime": "image/png",
+            "uri": "https://gateway.pinata.cloud/ipfs/bafkreicqjieltmg6wqebwcm5u54f2ims2duedfxdb6dbv5q7nhrjptgc44"
+          }
+        ],
+        "json_uri": "https://ipfs.io/ipfs/bafkreibw4vdhnsdrnblyh4rqx4liubzza7vxkf25wxhygq7ppjmuo4f5ji",
+        "links": {
+          "image": "https://gateway.pinata.cloud/ipfs/bafkreicqjieltmg6wqebwcm5u54f2ims2duedfxdb6dbv5q7nhrjptgc44"
+        },
+        "metadata": {
+          "description": "The future of finance is on Coinbase. For support: @CoinbaseSupport",
+          "json_name": "Coinbase official",
+          "name": "Coinbase official",
+          "symbol": "Coinbase"
+        }
+      },
+      "creators": [],
+      "grouping": [],
+      "id": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
+      "interface": "FungibleToken",
+      "last_indexed_slot": 468051016,
+      "mint_extensions": {
+        "metadata": {
+          "additional_metadata": [],
+          "mint": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
+          "name": "Coinbase official",
+          "symbol": "Coinbase",
+          "update_authority": null,
+          "uri": "https://ipfs.io/ipfs/bafkreibw4vdhnsdrnblyh4rqx4liubzza7vxkf25wxhygq7ppjmuo4f5ji"
+        },
+        "metadata_pointer": {
+          "authority": null,
+          "metadata_address": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump"
+        }
+      },
+      "mutable": true,
+      "ownership": {
+        "delegate": null,
+        "delegated": false,
+        "frozen": false,
+        "owner": "",
+        "ownership_model": "token"
+      },
+      "royalty": {
+        "basis_points": 0,
+        "locked": false,
+        "percent": 0.0,
+        "primary_sale_happened": false,
+        "royalty_model": "creators",
+        "target": null
+      },
+      "supply": null,
+      "token_info": {
+        "decimals": 6,
+        "price_info": {
+          "currency": "USDC",
+          "price_per_token": 1.5429666e-06
+        },
+        "supply": 983487769331821,
+        "symbol": "Coinbase",
+        "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+      }
+    }
+  }
+}

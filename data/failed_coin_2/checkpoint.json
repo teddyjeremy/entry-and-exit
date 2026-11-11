@@ -1,0 +1,12 @@
+{
+  "completed": false,
+  "label": "failed_coin_2",
+  "last_collected_at": "2026-11-11T08:09:35.177321+00:00",
+  "last_page_count": 100,
+  "last_signature": "NpK3Fzerhf2vdZcwC2RzQRUWh8e7DETLgKexs25fGn6U4xJb6F1zfL6K28zFtFdnbkUXMbdwZ3RTX2CcNXvdHwU",
+  "mint": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
+  "next_before_signature": "NpK3Fzerhf2vdZcwC2RzQRUWh8e7DETLgKexs25fGn6U4xJb6F1zfL6K28zFtFdnbkUXMbdwZ3RTX2CcNXvdHwU",
+  "pages_collected": 10,
+  "started_at": "2026-11-11T08:09:27.116525+00:00",
+  "transactions_collected": 1000
+}

@@ -1,0 +1,88 @@
+{
+  "collected_at": "2026-11-11T08:09:22.120689+00:00",
+  "mint": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
+  "response": {
+    "id": "entry-and-exit-research",
+    "jsonrpc": "2.0",
+    "result": {
+      "authorities": [],
+      "burnt": false,
+      "compression": {
+        "asset_hash": "",
+        "compressed": false,
+        "creator_hash": "",
+        "data_hash": "",
+        "eligible": false,
+        "leaf_id": 0,
+        "seq": 0,
+        "tree": ""
+      },
+      "content": {
+        "$schema": "https://schema.metaplex.com/nft1.0.json",
+        "files": [
+          {
+            "cdn_uri": "https://cdn.helius-rpc.com/cdn-cgi/image//https://iojb47k7fhhfujk5b5efyl7i4tmzptzl6m4cm6kfg7yw3mzrckva.turbo-gateway.com/Q5IefV8pzlolXQ9IXC_o5NmXzyvzOCZ5RTfxbbMxEqo?ext=jpg",
+            "mime": "image/png",
+            "uri": "https://iojb47k7fhhfujk5b5efyl7i4tmzptzl6m4cm6kfg7yw3mzrckva.turbo-gateway.com/Q5IefV8pzlolXQ9IXC_o5NmXzyvzOCZ5RTfxbbMxEqo?ext=jpg"
+          }
+        ],
+        "json_uri": "https://turbo-gateway.com/vStnyuLf35zfDok92GB-fcfxsIguGpH6F2UpVJUVA7Y?ext=json",
+        "links": {
+          "image": "https://iojb47k7fhhfujk5b5efyl7i4tmzptzl6m4cm6kfg7yw3mzrckva.turbo-gateway.com/Q5IefV8pzlolXQ9IXC_o5NmXzyvzOCZ5RTfxbbMxEqo?ext=jpg"
+        },
+        "metadata": {
+          "description": "I want to make the world a better place",
+          "json_name": "MrBeast",
+          "name": "MrBeast",
+          "symbol": "MrBeast"
+        }
+      },
+      "creators": [],
+      "grouping": [],
+      "id": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
+      "interface": "FungibleToken",
+      "last_indexed_slot": 468050995,
+      "mint_extensions": {
+        "metadata": {
+          "additional_metadata": [],
+          "mint": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
+          "name": "MrBeast",
+          "symbol": "MrBeast",
+          "update_authority": null,
+          "uri": "https://turbo-gateway.com/vStnyuLf35zfDok92GB-fcfxsIguGpH6F2UpVJUVA7Y?ext=json"
+        },
+        "metadata_pointer": {
+          "authority": null,
+          "metadata_address": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump"
+        }
+      },
+      "mutable": true,
+      "ownership": {
+        "delegate": null,
+        "delegated": false,
+        "frozen": false,
+        "owner": "",
+        "ownership_model": "token"
+      },
+      "royalty": {
+        "basis_points": 0,
+        "locked": false,
+        "percent": 0.0,
+        "primary_sale_happened": false,
+        "royalty_model": "creators",
+        "target": null
+      },
+      "supply": null,
+      "token_info": {
+        "decimals": 6,
+        "price_info": {
+          "currency": "USDC",
+          "price_per_token": 0.00013423571
+        },
+        "supply": 985734793037017,
+        "symbol": "MrBeast",
+        "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+      }
+    }
+  }
+}
