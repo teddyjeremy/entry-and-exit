@@ -79,7 +79,7 @@ jobs:
     # Run the requested historical cohort on manual dispatch or when this
     # pipeline is first introduced/updated. The six-hour collector schedule
     # does not repeatedly re-run the historical cohort.
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.modified, 'hourly_cohort.py')) || (github.event_name == 'push' && contains(github.event.head_commit.added, 'hourly_cohort.py'))
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(github.event.head_commit.modified, 'hourly_cohort.py') || contains(github.event.head_commit.added, 'hourly_cohort.py') || contains(github.event.head_commit.modified, '.github/workflows/helius-research.yml')))
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
