@@ -36,8 +36,8 @@ class NormalizedMarketEvent(BaseModel):
     price_sol: float = Field(gt=0)
     buy_quote_sol: float = Field(ge=0)
     sell_quote_sol: float = Field(ge=0)
-    buyers: list[str] = []
-    sellers: list[str] = []
+    buyers: list[str] = Field(default_factory=list)
+    sellers: list[str] = Field(default_factory=list)
     creator_sell_supply_pct: float | None = None
     linked_wallet_sell_supply_pct: float | None = None
     cluster_sell_supply_pct: float | None = None
