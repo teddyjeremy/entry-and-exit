@@ -89,8 +89,9 @@ def evaluate_entry(events: list[TradeEvent], launch_ts: float, now: float,
         else:
             low_i,low_p=pullback; low_p=min(low_p,p); pullback=(low_i,low_p)
             if (peak-low_p)/peak*100>rules.pullback_max_pct: return {"decision":"WATCH","reason":"PULLBACK_EXCEEDED_40_PERCENT"}
-            prior=[x["price"] for x in buckets[max(0,i-3):i] if x["price"] is not None]
-            previous_5s_high=max(prior) if prior else peak
+            bucket_time=buckets[i]["start"]
+            prior_prices=[e.price_sol for e in events if bucket_time-5.0<=e.timestamp<bucket_time and e.price_sol>0]
+            previous_5s_high=max(prior_prices) if prior_prices else peak
             if p>=previous_5s_high*(1+rules.reclaim_pct/100): reclaim=i; break
     if pullback is None: return {"decision":"WATCH","reason":"NO_10_TO_40_PERCENT_PULLBACK"}
     if reclaim is None: return {"decision":"WATCH","reason":"NO_RECLAIM_ABOVE_PREVIOUS_5S_HIGH"}
@@ -103,7 +104,8 @@ def evaluate_entry(events: list[TradeEvent], launch_ts: float, now: float,
     age=now-confirmation_end
     if not 1.0<=age<=2.0:
         return {"decision":"WATCH","reason":"CONFIRMATION_NOT_1_TO_2_SECONDS_OLD","confirmation_age_seconds":age}
-    prior=[x["price"] for x in buckets[max(0,reclaim-3):reclaim] if x["price"] is not None]
+    reclaim_time=buckets[reclaim]["start"]
+    prior=[e.price_sol for e in events if reclaim_time-5.0<=e.timestamp<reclaim_time and e.price_sol>0]
     if not prior:
         return {"decision":"WATCH","reason":"MISSING_PREVIOUS_5S_HIGH"}
     hold_level=max(prior)*(1+rules.reclaim_pct/100)
