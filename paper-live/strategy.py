@@ -35,7 +35,9 @@ class Rules:
     profit_locks: tuple = ((10.0, 5.0), (50.0, 15.0), (100.0, 40.0), (200.0, 80.0))
     # Proposed dynamic exit defaults for paper validation; not original entry rules.
     exit_flow_window_seconds: int = 5
+    sell_pressure_confirmations: int = 2
     buy_decay_pct: float = 60.0
+    buy_decay_window_seconds: int = 10
 
 @dataclass
 class TradeEvent:
@@ -92,11 +94,22 @@ def evaluate_entry(events: list[TradeEvent], launch_ts: float, now: float,
             if p>=previous_5s_high*(1+rules.reclaim_pct/100): reclaim=i; break
     if pullback is None: return {"decision":"WATCH","reason":"NO_10_TO_40_PERCENT_PULLBACK"}
     if reclaim is None: return {"decision":"WATCH","reason":"NO_RECLAIM_ABOVE_PREVIOUS_5S_HIGH"}
-    age=now-buckets[reclaim]["start"]
-    if not 1.0<=age<=2.0: return {"decision":"WATCH","reason":"RECLAIM_SIGNAL_NOT_1_TO_2_SECONDS_OLD","reclaim_age_seconds":age}
     flow=buckets[reclaim+1:reclaim+1+rules.confirmation_windows]
     if len(flow)!=rules.confirmation_windows or any(x["price"] is None for x in flow):
         return {"decision":"WATCH","reason":"THREE_CONFIRMATION_WINDOWS_NOT_COMPLETE"}
+    # The confirmation is the completed third flow window; it must be fresh,
+    # then the next observation must still hold the reclaim level.
+    confirmation_end=buckets[reclaim+rules.confirmation_windows]["start"]+rules.flow_window_seconds
+    age=now-confirmation_end
+    if not 1.0<=age<=2.0:
+        return {"decision":"WATCH","reason":"CONFIRMATION_NOT_1_TO_2_SECONDS_OLD","confirmation_age_seconds":age}
+    prior=[x["price"] for x in buckets[max(0,reclaim-3):reclaim] if x["price"] is not None]
+    if not prior:
+        return {"decision":"WATCH","reason":"MISSING_PREVIOUS_5S_HIGH"}
+    hold_level=max(prior)*(1+rules.reclaim_pct/100)
+    latest=[e for e in events if now-2.0<=e.timestamp<=now]
+    if not latest or max(e.price_sol for e in latest)<hold_level:
+        return {"decision":"WATCH","reason":"NEXT_OBSERVATION_FAILED_RECLAIM_RECHECK"}
     buyers=set(); wallet_buy=defaultdict(float); total_buy=0.0; checks=[]
     for n,b in enumerate(flow,1):
         ratio=b["buys"]/b["sells"] if b["sells"] else (float("inf") if b["buys"] else 0.0)
@@ -144,14 +157,27 @@ def exit_decision(position:dict[str,Any],events:list[TradeEvent],now_price:float
     reason=None
     if now_price<=stop: reason="TRAILING_STOP" if stop>entry*(1-rules.hard_stop_pct/100) else "HARD_STOP"
     else:
-        recent=[e for e in events if now-rules.exit_flow_window_seconds<=e.timestamp<=now]
-        prior=[e for e in events if now-2*rules.exit_flow_window_seconds<=e.timestamp<now-rules.exit_flow_window_seconds]
-        buy=sum(e.quote_sol for e in recent if e.side.upper()=="BUY")
-        sell=sum(e.quote_sol for e in recent if e.side.upper()=="SELL")
-        prior_buy=sum(e.quote_sol for e in prior if e.side.upper()=="BUY")
-        decay=(1-buy/prior_buy)*100 if prior_buy>0 else 0
-        if sell>buy and sell>0: reason="SELL_PRESSURE"
-        elif prior_buy>0 and decay>=rules.buy_decay_pct and sell>=buy: reason="BUY_VOLUME_DECAY_WITH_SELL_PRESSURE"
+        width=rules.exit_flow_window_seconds
+        pressure_windows=[]
+        for n in range(rules.sell_pressure_confirmations):
+            start=now-(n+1)*width
+            end=now-n*width
+            window=[e for e in events if start<=e.timestamp<end]
+            b=sum(e.quote_sol for e in window if e.side.upper()=="BUY")
+            s=sum(e.quote_sol for e in window if e.side.upper()=="SELL")
+            pressure_windows.append(s>b and s>0)
+        if len(pressure_windows)==rules.sell_pressure_confirmations and all(pressure_windows):
+            reason="SUSTAINED_SELL_PRESSURE"
+        else:
+            span=rules.buy_decay_window_seconds
+            current=[e for e in events if now-span<=e.timestamp<=now]
+            previous=[e for e in events if now-2*span<=e.timestamp<now-span]
+            current_buy=sum(e.quote_sol for e in current if e.side.upper()=="BUY")
+            current_sell=sum(e.quote_sol for e in current if e.side.upper()=="SELL")
+            previous_buy=sum(e.quote_sol for e in previous if e.side.upper()=="BUY")
+            decay=(1-current_buy/previous_buy)*100 if previous_buy>0 else 0
+            if previous_buy>0 and decay>=rules.buy_decay_pct and current_sell>=current_buy:
+                reason="BUY_VOLUME_DECAY_WITH_SELL_PRESSURE"
     if reason and not route_verified:
         return {"action":"HOLD_ROUTE_UNAVAILABLE","reason":reason,"pnl_pct":pnl,"active_stop_price":stop,"peak_price":peak}
     if reason: return {"action":"SELL","reason":reason,"pnl_pct":pnl,"active_stop_price":stop,"peak_price":peak}
