@@ -3,10 +3,6 @@ name: Helius coin research
 on:
   workflow_dispatch:
     inputs:
-      pages_per_mint:
-        description: Maximum new Helius history pages to collect per configured mint
-        required: false
-        default: "10"
       cohort_date:
         description: UTC launch date (YYYY-MM-DD)
         required: false
@@ -17,7 +13,6 @@ on:
         default: "0"
   push:
     paths:
-      - "config/mints.json"
       - "hourly_cohort.py"
       - ".github/workflows/helius-research.yml"
   schedule:
@@ -31,10 +26,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The configured-mint collector is now schedule-only. It cannot consume
+  # Helius quota when the hourly cohort is dispatched or its code is updated.
   collect:
-    # The legacy configured-mint collector must not run on manual hourly
-    # dispatches or when only the hourly pipeline is changed.
-    if: github.event_name == 'schedule' || (github.event_name == 'push' && (contains(join(github.event.commits.*.modified, ','), 'config/mints.json') || contains(join(github.event.commits.*.added, ','), 'config/mints.json')))
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -55,7 +50,7 @@ jobs:
       - name: Collect configured Helius research
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
-          PAGES_PER_MINT: ${{ github.event.inputs.pages_per_mint || '10' }}
+          PAGES_PER_MINT: "10"
         run: python collector.py
 
       - name: Commit resumable configured data and checkpoints
@@ -67,7 +62,9 @@ jobs:
             echo "No new research data to commit."
           else
             git commit -m "Add Helius coin research data"
-            git push
+            git fetch origin main
+            git rebase origin/main
+            git push origin HEAD:main
           fi
 
       - name: Upload configured research snapshot
@@ -78,10 +75,9 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  # Pushes to either path above and manual dispatches always execute this job.
+  # No fragile commit-message/path expression is needed here.
   hourly-cohort:
-    # This workflow is path-filtered above. Run the hourly pipeline for changes
-    # to its own script/workflow, but not for a config/mints-only change.
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(join(github.event.commits.*.modified, ','), 'hourly_cohort.py') || contains(join(github.event.commits.*.added, ','), 'hourly_cohort.py') || contains(join(github.event.commits.*.modified, ','), '.github/workflows/helius-research.yml') || contains(join(github.event.commits.*.added, ','), '.github/workflows/helius-research.yml')))
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
@@ -108,7 +104,7 @@ jobs:
           hour = int(os.environ["COHORT_HOUR_UTC"])
           if not 0 <= hour <= 23:
               raise SystemExit("COHORT_HOUR_UTC must be 0..23")
-          print(f"Running {os.environ['COHORT_DATE']} hour {hour:02d}:00- {(hour + 1) % 24:02d}:00 UTC")
+          print(f"Running {os.environ['COHORT_DATE']} hour {hour:02d}:00 UTC cohort")
           PY
 
       - name: Screen UTC launch hour and collect bounded Helius history
