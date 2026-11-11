@@ -15,7 +15,10 @@ This repository is a read-only Helius research collector. It is not a trading bo
 - Run those tests in a separate GitHub Actions workflow.
 - Add a conservative Helius Pump instruction evidence parser that recursively inspects nested router calls and recognizes only the reviewed buyV2/sellV2 instruction discriminators when the configured mint and curve appear in the same instruction.
 - Add a raw-transaction audit documenting the TRENCHER sample's mixed Helius labels, duplicate signatures, incomplete collection, and parser limitations.
-- Add eight parser regression tests; latest verified CI run passed all 20 tests (run `43002244843`).
+- Add eight parser regression tests; latest verified parser CI run passed all 20 tests (run `43002244843`).
+- Add portfolio admission rules: one concurrent position initially, plus one position for each $5 milestone of realized equity; a position slot is occupied until exit is confirmed.
+- Enforce one entry per mint for the lifetime of the strategy, including after exit; the pure policy rejects previously traded mints.
+- Add 11 portfolio-policy regression tests and store the policy in `config/strategy_baseline.json`.
 - Record the agreed recommended filter baseline as paper-only configuration. Live trading remains disabled.
 
 ## Next implementation phases
@@ -43,6 +46,9 @@ This repository is a read-only Helius research collector. It is not a trading bo
 
 ### 3. Paper execution engine
 
+- Apply `strategy/portfolio_rules.py` before every entry. Use realized equity (not unrealized open-position gains) for capacity tiers; default tiers are 1 slot below $5, 2 from $5 to below $10, 3 from $10 to below $15, and so on.
+- Persist every mint's first-entry marker permanently in the append-only ledger. Never clear it after exit; reject any later signal for that mint.
+- Reserve a free slot and mark the mint as traded atomically before order submission to prevent concurrent workers from double-entering. Release the slot only after exit confirmation and balance reconciliation.
 - Keep live signing disabled by default and do not load a private key in paper mode.
 - Use finalized/confirmed event handling with explicit slot and timestamp freshness limits.
 - Make signal and order processing idempotent across reconnects and worker restarts.
@@ -73,6 +79,7 @@ See `config/strategy_baseline.json`. These are experimental research filters, no
 - Research collector: safety fixes and regression tests added in this branch; CI passed. Real-data pagination fixtures and broader collector validation remain.
 - Eligibility preflight: implemented as a pure fail-closed gate; it still requires a trusted parser to populate its snapshot fields.
 - Pump instruction evidence parser: implemented conservatively for current buyV2/sellV2 discriminators; legacy instruction decoding and quote-asset accounting remain incomplete.
+- Portfolio admission policy: implemented and tested as a pure gate; persistent ledger integration, atomic reservation, and exit-confirmation handling remain part of the paper engine.
 - Historical replay: not implemented.
 - Paper trading engine: not implemented.
 - Live trading: disabled and not implemented.
