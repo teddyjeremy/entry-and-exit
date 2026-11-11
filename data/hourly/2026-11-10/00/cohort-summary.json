@@ -10,15 +10,15 @@
   },
   "launches_in_hour": 1614,
   "qualified_before_cap": 389,
-  "qualified_not_collected_due_to_cap": 339,
+  "queued_for_deep_collection": 389,
   "screening_rules": {
-    "deep_collection_cap": 50,
+    "batch_size": 5,
+    "deep_collection_cap": null,
     "maximum_bundle_supply_share": 0.2,
     "minimum_buyers_first_10s": 5,
     "missing_or_invalid_bundle_evidence": "WATCH; not deep-collected",
     "priority": "buyers_first_10s descending, bundle share ascending, launch time ascending"
   },
-  "selected_for_deep_collection": 50,
   "window_end_utc_exclusive": "2026-11-10T01:00:00+00:00",
   "window_start_utc": "2026-11-10T00:00:00+00:00"
 }
