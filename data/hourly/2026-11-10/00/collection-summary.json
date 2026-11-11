@@ -1,13 +1,25 @@
 {
   "batch_size": 5,
-  "coins_with_complete_history": 380,
-  "complete": true,
+  "coins_with_complete_history": 381,
+  "complete": false,
   "data_window_rule": "Only transactions with timestamps from launch through launch+3600 seconds inclusive are saved.",
   "date_utc": "2026-11-10",
   "hour_utc": 0,
+  "incomplete_coin_count": 8,
+  "incomplete_mints": [
+    "BT6h2DxZv1AoAPKoxUH5qftEZLiGvBuo9ie99CLnpump",
+    "HEY7QtQsW2qPV4geRhaXBxFvf7yfWgrqKjtLD9DXpump",
+    "28Li8BCcZn8wvNj7j5Ta5z24tR3qhksk4N2LCDaHpump",
+    "B41KDiSswkh9KHx8ZGnZqbgsPiCFdE5uQRv1n7nzpump",
+    "9wDnMgM4opqu9zHQruFfVtbKqjRfdxhLxSq2NnoPpump",
+    "9bQ8yieSUa62Su6DnadFwbthsYvtWeE7VGpp1P8qpump",
+    "zPzJmoo5rVXTEk9seHoenCVCRX2jmxUCAYQku4wpump",
+    "4g86j6bptiw8msr13z6B9Pe9Not5AE5S2aMYKN37pump"
+  ],
   "limitation": "Raw address transactions are not yet decoded into swaps/trades; no PnL or final entry decision is produced.",
   "next_index": 389,
-  "processed_candidates": 389,
-  "remaining_candidates": 0,
+  "processed_candidates": 381,
+  "remaining_candidates": 8,
+  "repair_mode": true,
   "selected_for_deep_collection": 389
 }

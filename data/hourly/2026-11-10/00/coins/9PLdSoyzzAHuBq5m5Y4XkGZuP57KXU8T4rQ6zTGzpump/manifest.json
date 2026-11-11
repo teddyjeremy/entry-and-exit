@@ -1,6 +1,6 @@
 {
   "bonding_curve": "ATgnbsLSMzvaFGc2YLS9ny71M2sobRLTzWaNM6xmtyCC",
-  "collection_status": "INCOMPLETE",
+  "collection_status": "COMPLETE",
   "created": 1794271432,
   "created_utc": "2026-11-10T00:43:52+00:00",
   "creator": "FZZ9AYTbmXrWpT9qPWCGGTeTnzmKK2yQHSDSGwDA9sps",
@@ -28,7 +28,7 @@
   "mint_history": {
     "address": "9PLdSoyzzAHuBq5m5Y4XkGZuP57KXU8T4rQ6zTGzpump",
     "before_signature": "5xrsr89wQ12TcozgH3XAczFrqHoP4UEupLE1aFxwh1qZXpKkkej583EFUmVSzrAtkrsT6Lkr84yT3WCicc8HmZv6",
-    "completed": false,
+    "completed": true,
     "label": "mint",
     "page_files": [
       "page-0001.jsonl",
@@ -36,12 +36,12 @@
     ],
     "page_limit_hit": false,
     "pages_fetched": 2,
-    "reached_start_of_window": false,
+    "reached_start_of_window": true,
     "transactions_saved": 198,
     "window_end": 1794275032,
     "window_end_utc": "2026-11-10T01:43:52+00:00",
     "window_start": 1794271432,
     "window_start_utc": "2026-11-10T00:43:52+00:00"
   },
-  "screening_status": "SHORTLISTED_FOR_DEEP_COLLECTION"
+  "screening_status": "QUEUED_FOR_DEEP_COLLECTION"
 }
