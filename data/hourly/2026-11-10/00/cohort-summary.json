@@ -1,0 +1,24 @@
+{
+  "dataset_complete": true,
+  "dataset_complete_to": "2026-11-11T00:00:00Z",
+  "date_utc": "2026-11-10",
+  "hour_utc": 0,
+  "important": "This is a strict first-pass research screen only. It does not evaluate decoded buy/sell pressure, wallet clusters, liquidity, execution costs, or BUY eligibility.",
+  "initial_screen_counts": {
+    "QUALIFIED": 389,
+    "REJECTED": 1225
+  },
+  "launches_in_hour": 1614,
+  "qualified_before_cap": 389,
+  "qualified_not_collected_due_to_cap": 339,
+  "screening_rules": {
+    "deep_collection_cap": 50,
+    "maximum_bundle_supply_share": 0.2,
+    "minimum_buyers_first_10s": 5,
+    "missing_or_invalid_bundle_evidence": "WATCH; not deep-collected",
+    "priority": "buyers_first_10s descending, bundle share ascending, launch time ascending"
+  },
+  "selected_for_deep_collection": 50,
+  "window_end_utc_exclusive": "2026-11-10T01:00:00+00:00",
+  "window_start_utc": "2026-11-10T00:00:00+00:00"
+}
