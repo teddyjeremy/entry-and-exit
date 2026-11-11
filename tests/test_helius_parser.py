@@ -117,7 +117,8 @@ class HeliusParserTests(unittest.TestCase):
     def test_requires_exact_idl_account_positions(self):
         ix = pump_instruction([184, 23, 238, 97, 103, 197, 211, 61])
         layout = PUMP_TRADE_ACCOUNT_LAYOUTS["buyV2"]
-        ix["accounts"][0] = MINT  # Also place it at a wrong index.\n        ix["accounts"][layout["mint_index"]] = "DifferentMint"
+        ix["accounts"][0] = MINT  # Also place it at a wrong index.
+        ix["accounts"][layout["mint_index"]] = "DifferentMint"
         self.assertIn(MINT, ix["accounts"])
         result = parse_pump_fun_evidence(self.transaction([ix]), MINT, CURVE)
         self.assertEqual(result["events"], [])
