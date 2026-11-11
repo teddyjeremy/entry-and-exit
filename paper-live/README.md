@@ -46,3 +46,6 @@ gcloud secrets create paper-dashboard-token --replication-policy=automatic
 - Add replay fixtures, portfolio accounting, restart/idempotency tests, and operational alerts.
 
 No live-order code is included.
+
+## Vercel project
+The dashboard is linked to the Vercel project entry-exit-paper-dashboard with root directory paper-live/dashboard. The project has not been deployed yet; the backend URL and token are intentionally not configured until the Cloud Run service and secrets exist.
