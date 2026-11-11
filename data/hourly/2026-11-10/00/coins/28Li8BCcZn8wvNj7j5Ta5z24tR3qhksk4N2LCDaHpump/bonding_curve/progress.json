@@ -1,11 +1,11 @@
 {
   "address": "AqKZwUrCiS3qftcAfzaHx1nJRRTbitksFwTe1aPcK2zY",
-  "before_signature": "DF8tYscFmJyjwiYVsNHMkZykf3GNZqCkUkE4pJgX3AgD3JWHG2xWYigvxsGFtJgvEVvsTaMczTDSM5o7KopsbZ7",
+  "before_signature": "2mnmWHcKUWi9ZXbTpbkfsVMQs5Ti7b69vNiERWnoQ2HPYfKtwAmd1VHcYYcDDzuCJiaUq8thGizxHFD1qUFpbhMb",
   "completed": false,
   "label": "bonding_curve",
   "page_files": [],
   "page_limit_hit": true,
-  "pages_fetched": 100,
+  "pages_fetched": 120,
   "reached_start_of_window": false,
   "transactions_saved": 0,
   "window_end": 1794274775,
