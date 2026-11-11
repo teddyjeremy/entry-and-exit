@@ -235,6 +235,22 @@ def main() -> int:
     if not isinstance(queue, list) or not queue:
         raise SystemExit("candidate-queue.json is missing or empty")
 
+    # Analyse only coins whose mint AND bonding-curve histories are complete.
+    # Keep incomplete candidates visible in the report, but never mix partial
+    # histories into complete-cohort metrics.
+    analysis_queue = []
+    incomplete = []
+    for candidate in queue:
+        coin_dir = COHORT_DIR / "coins" / candidate["mint"]
+        mint_progress = read_json(coin_dir / "mint" / "progress.json", {})
+        curve_progress = read_json(coin_dir / "bonding_curve" / "progress.json", {})
+        if mint_progress.get("completed") and curve_progress.get("completed"):
+            analysis_queue.append(candidate)
+        else:
+            incomplete.append(candidate["mint"])
+    if not analysis_queue:
+        raise SystemExit("No coins have both complete one-hour address histories yet")
+
     ANALYSIS_DIR.mkdir(parents=True, exist_ok=True)
     trades_path = ANALYSIS_DIR / "trade-events.jsonl"
     wallets_path = ANALYSIS_DIR / "wallet-metrics.jsonl"
@@ -247,10 +263,9 @@ def main() -> int:
     coin_rows = []
     total_raw = total_unique = total_failed = total_unclassified = 0
     total_curve_events = 0
-    incomplete = []
     parse_errors = 0
 
-    for index, candidate in enumerate(queue, 1):
+    for index, candidate in enumerate(analysis_queue, 1):
         mint = candidate["mint"]
         coin_dir = COHORT_DIR / "coins" / mint
         manifest = read_json(coin_dir / "manifest.json", {})
@@ -324,7 +339,7 @@ def main() -> int:
         curve_progress = read_json(coin_dir / "bonding_curve" / "progress.json", {})
         is_complete = bool(mint_progress.get("completed") and curve_progress.get("completed"))
         if not is_complete:
-            incomplete.append(mint)
+            raise RuntimeError(f"Coin {mint} became incomplete during analysis; refusing partial metrics")
 
         coin = {
             "mint": mint, "creator": candidate.get("creator"),
@@ -373,14 +388,15 @@ def main() -> int:
         total_unclassified += unclassified
         total_curve_events += len(curve_events)
         if index % 25 == 0:
-            print(f"Decoded {index}/{len(queue)} coins...", flush=True)
+            print(f"Decoded {index}/{len(analysis_queue)} complete-history coins...", flush=True)
 
     summary = {
         "cohort_date_utc": DAY, "cohort_hour_utc": HOUR,
         "coins_in_queue": len(queue),
-        "coins_with_complete_raw_history": sum(row["collection_complete"] for row in coin_rows),
-        "coins_with_incomplete_raw_history": len(incomplete),
-        "incomplete_mints": incomplete,
+        "coins_analyzed_complete_history_only": len(analysis_queue),
+        "coins_with_complete_raw_history": len(analysis_queue),
+        "coins_skipped_incomplete_history": len(incomplete),
+        "incomplete_mints_skipped": incomplete,
         "raw_records_read": total_raw, "unique_transaction_signatures": total_unique,
         "duplicate_records_across_mint_and_curve_addresses": total_raw - total_unique,
         "failed_transactions": total_failed, "parse_errors": parse_errors,
@@ -403,6 +419,7 @@ def main() -> int:
             "Curve-state output records relative reserve deltas and a rough implied price only when curve native and token deltas coexist; it is not a reliable post-migration market price or absolute liquidity measurement.",
             "No historical quote simulation, slippage model, wallet-cluster attribution, realized PnL, or final BUY decision is produced.",
         ],
+        "analysis_scope": "COMPLETE_ONE_HOUR_HISTORIES_ONLY",
         "status": "DECODED_RESEARCH_EVIDENCE_NOT_A_STRATEGY",
     }
     write_json(ANALYSIS_DIR / "analysis-summary.json", summary)
@@ -413,7 +430,8 @@ def main() -> int:
     collection_summary["decoded_buy_events"] = summary["decoded_buy_events"]
     collection_summary["decoded_sell_events"] = summary["decoded_sell_events"]
     collection_summary["curve_state_events"] = summary["curve_state_events"]
-    collection_summary["coins_with_incomplete_raw_history"] = summary["coins_with_incomplete_raw_history"]
+    collection_summary["coins_analyzed_complete_history_only"] = summary["coins_analyzed_complete_history_only"]
+    collection_summary["coins_skipped_incomplete_history"] = summary["coins_skipped_incomplete_history"]
     collection_summary["limitation"] = "Trade-side evidence is decoded, but native deltas are not trade notional; no execution simulation, realized PnL, or final BUY decision is produced."
     write_json(collection_summary_path, collection_summary)
     print(json.dumps(summary, indent=2))
