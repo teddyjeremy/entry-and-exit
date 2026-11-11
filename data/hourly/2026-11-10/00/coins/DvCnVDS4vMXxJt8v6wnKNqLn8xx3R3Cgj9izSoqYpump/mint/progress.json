@@ -1,0 +1,17 @@
+{
+  "address": "DvCnVDS4vMXxJt8v6wnKNqLn8xx3R3Cgj9izSoqYpump",
+  "before_signature": null,
+  "completed": true,
+  "label": "mint",
+  "page_files": [
+    "page-0001.jsonl"
+  ],
+  "page_limit_hit": false,
+  "pages_fetched": 1,
+  "reached_start_of_window": true,
+  "transactions_saved": 23,
+  "window_end": 1794273435,
+  "window_end_utc": "2026-11-10T01:17:15+00:00",
+  "window_start": 1794269835,
+  "window_start_utc": "2026-11-10T00:17:15+00:00"
+}
