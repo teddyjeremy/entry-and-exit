@@ -1,7 +1,7 @@
 {
   "address": "BT6h2DxZv1AoAPKoxUH5qftEZLiGvBuo9ie99CLnpump",
-  "before_signature": "5VUX6r6dns2LKNmmEWN8ovfEpjDLYGLEJxKtd3tosT97rmBDpyvA2jZMNBdJFW2ayAJmeft9eZfuptdih2KZ7WGP",
-  "completed": false,
+  "before_signature": "2ogXWAEpoJmURZpchuqG8CriuYbwvkXNn4ZwJGEGUD9q15JjcqYsw5hJqoz79VdTrsNN8ycs3zqrBqoqAaciW9rV",
+  "completed": true,
   "label": "mint",
   "page_files": [
     "page-0002.jsonl",
@@ -42,12 +42,17 @@
     "page-0037.jsonl",
     "page-0038.jsonl",
     "page-0039.jsonl",
-    "page-0040.jsonl"
+    "page-0040.jsonl",
+    "page-0041.jsonl",
+    "page-0042.jsonl",
+    "page-0043.jsonl",
+    "page-0044.jsonl",
+    "page-0045.jsonl"
   ],
-  "page_limit_hit": true,
-  "pages_fetched": 40,
-  "reached_start_of_window": false,
-  "transactions_saved": 3894,
+  "page_limit_hit": false,
+  "pages_fetched": 45,
+  "reached_start_of_window": true,
+  "transactions_saved": 4321,
   "window_end": 1794275999,
   "window_end_utc": "2026-11-10T01:59:59+00:00",
   "window_start": 1794272399,
