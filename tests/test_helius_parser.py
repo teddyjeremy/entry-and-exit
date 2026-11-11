@@ -8,7 +8,7 @@ CURVE = "Curve1111111111111111111111111111111111111"
 
 def b58encode(raw: bytes) -> str:
     alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-    zeros = len(raw) - len(raw.lstrip(b"\\x00"))
+    zeros = len(raw) - len(raw.lstrip(b"\x00"))
     number = int.from_bytes(raw, "big")
     encoded = ""
     while number:
@@ -20,7 +20,7 @@ def b58encode(raw: bytes) -> str:
 def pump_instruction(discriminator, accounts=None):
     return {
         "programId": PUMP_PROGRAM_ID,
-        "data": b58encode(bytes(discriminator) + b"\\x00" * 16),
+        "data": b58encode(bytes(discriminator) + b"\x00" * 16),
         "accounts": accounts or [MINT, CURVE],
     }
 
