@@ -34,7 +34,7 @@ def _base58_decode(value: str) -> bytes:
         number = number * 58 + digit
     decoded = number.to_bytes((number.bit_length() + 7) // 8, "big") if number else b""
     leading_zeroes = len(value) - len(value.lstrip("1"))
-    return b"\\x00" * leading_zeroes + decoded
+    return b"\x00" * leading_zeroes + decoded
 
 
 def _walk_instructions(instructions):
