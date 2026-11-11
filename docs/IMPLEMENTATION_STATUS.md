@@ -18,7 +18,7 @@ This repository is a read-only Helius research collector. It is not a trading bo
 
 ### 1. Collector correctness
 
-- Run the CI workflow and verify it passes.
+- CI regression workflow passed on this branch (run `43000016702`; 4 tests passed).
 - Add fixtures from real Helius responses, including rate limits, malformed responses, empty pages, and pagination boundaries.
 - Add duplicate-signature detection across pages and an explicit collection manifest with per-address completion state.
 - Extend collection to all required launch and bonding-curve accounts before using the data for wallet-flow conclusions.
@@ -65,7 +65,7 @@ See `config/strategy_baseline.json`. These are experimental research filters, no
 
 ## Release status
 
-- Research collector: safety fixes and regression tests added in this branch; CI result must be checked before merging.
+- Research collector: safety fixes and regression tests added in this branch; CI passed. Real-data pagination fixtures and broader collector validation remain.
 - Historical replay: not implemented.
 - Paper trading engine: not implemented.
 - Live trading: disabled and not implemented.
