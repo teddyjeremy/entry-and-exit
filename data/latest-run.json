@@ -3,24 +3,33 @@
   "helius_api": "Enhanced Transactions address history + DAS getAsset",
   "page_limit": 100,
   "pages_per_mint_this_run": 10,
-  "run_finished_at": "2026-11-11T08:40:16.570389+00:00",
-  "run_started_at": "2026-11-11T08:39:52.039154+00:00",
+  "run_finished_at": "2026-11-11T08:46:51.060603+00:00",
+  "run_started_at": "2026-11-11T08:46:07.157602+00:00",
   "targets": [
     {
+      "bonding_curve_address": null,
+      "bonding_curve_completed": false,
+      "bonding_curve_transactions": 0,
       "completed": false,
       "label": "failed_coin_1",
       "mint": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
-      "pages_collected": 30,
-      "transactions_collected": 3000
+      "pages_collected": 40,
+      "transactions_collected": 4000
     },
     {
+      "bonding_curve_address": null,
+      "bonding_curve_completed": false,
+      "bonding_curve_transactions": 0,
       "completed": false,
       "label": "failed_coin_2",
       "mint": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
-      "pages_collected": 30,
-      "transactions_collected": 3000
+      "pages_collected": 40,
+      "transactions_collected": 4000
     },
     {
+      "bonding_curve_address": null,
+      "bonding_curve_completed": false,
+      "bonding_curve_transactions": 0,
       "completed": true,
       "label": "failed_coin_3",
       "mint": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump",
@@ -28,9 +37,22 @@
       "transactions_collected": 1345
     },
     {
+      "bonding_curve_address": null,
+      "bonding_curve_completed": false,
+      "bonding_curve_transactions": 0,
       "completed": false,
       "label": "positive_coin_cash_tag",
       "mint": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash",
+      "pages_collected": 20,
+      "transactions_collected": 2000
+    },
+    {
+      "bonding_curve_address": "AzoTQt6G3J6J1i1dGXHuAmiVgGN9r58PUmuKbYRAfrhK",
+      "bonding_curve_completed": false,
+      "bonding_curve_transactions": 1000,
+      "completed": false,
+      "label": "candidate_coin_bxwgus",
+      "mint": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump",
       "pages_collected": 10,
       "transactions_collected": 1000
     }

@@ -1,0 +1,88 @@
+{
+  "collected_at": "2026-11-11T08:46:30.986107+00:00",
+  "mint": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump",
+  "response": {
+    "id": "entry-and-exit-research",
+    "jsonrpc": "2.0",
+    "result": {
+      "authorities": [],
+      "burnt": false,
+      "compression": {
+        "asset_hash": "",
+        "compressed": false,
+        "creator_hash": "",
+        "data_hash": "",
+        "eligible": false,
+        "leaf_id": 0,
+        "seq": 0,
+        "tree": ""
+      },
+      "content": {
+        "$schema": "https://schema.metaplex.com/nft1.0.json",
+        "files": [
+          {
+            "cdn_uri": "https://cdn.helius-rpc.com/cdn-cgi/image//https://ipfs.io/ipfs/bafybeiaw6h6f2aoze7o2wdz6yryplpp4k7tso6kjaxwaypqw5md2hrqjnm",
+            "mime": "image/png",
+            "uri": "https://ipfs.io/ipfs/bafybeiaw6h6f2aoze7o2wdz6yryplpp4k7tso6kjaxwaypqw5md2hrqjnm"
+          }
+        ],
+        "json_uri": "https://ipfs.io/ipfs/bafkreid4ossal4ygnm6i3hvlr3o5cgulerqdxt4tl4zutxvl36z54mbj7m",
+        "links": {
+          "image": "https://ipfs.io/ipfs/bafybeiaw6h6f2aoze7o2wdz6yryplpp4k7tso6kjaxwaypqw5md2hrqjnm"
+        },
+        "metadata": {
+          "description": "",
+          "json_name": "TRENCHER",
+          "name": "TRENCHER",
+          "symbol": "TRENCHER"
+        }
+      },
+      "creators": [],
+      "grouping": [],
+      "id": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump",
+      "interface": "FungibleToken",
+      "last_indexed_slot": 468061405,
+      "mint_extensions": {
+        "metadata": {
+          "additional_metadata": [],
+          "mint": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump",
+          "name": "TRENCHER",
+          "symbol": "TRENCHER",
+          "update_authority": null,
+          "uri": "https://ipfs.io/ipfs/bafkreid4ossal4ygnm6i3hvlr3o5cgulerqdxt4tl4zutxvl36z54mbj7m"
+        },
+        "metadata_pointer": {
+          "authority": null,
+          "metadata_address": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump"
+        }
+      },
+      "mutable": true,
+      "ownership": {
+        "delegate": null,
+        "delegated": false,
+        "frozen": false,
+        "owner": "",
+        "ownership_model": "token"
+      },
+      "royalty": {
+        "basis_points": 0,
+        "locked": false,
+        "percent": 0.0,
+        "primary_sale_happened": false,
+        "royalty_model": "creators",
+        "target": null
+      },
+      "supply": null,
+      "token_info": {
+        "decimals": 6,
+        "price_info": {
+          "currency": "USDC",
+          "price_per_token": 2.8636618e-06
+        },
+        "supply": 951306842331952,
+        "symbol": "TRENCHER",
+        "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+      }
+    }
+  }
+}
