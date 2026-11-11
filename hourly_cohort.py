@@ -360,3 +360,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+# Trigger the corrected resumable cohort workflow after merge.
