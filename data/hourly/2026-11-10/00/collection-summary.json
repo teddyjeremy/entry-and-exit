@@ -1,13 +1,13 @@
 {
   "batch_size": 5,
-  "coins_with_complete_history": 302,
+  "coins_with_complete_history": 307,
   "complete": false,
   "data_window_rule": "Only transactions with timestamps from launch through launch+3600 seconds inclusive are saved.",
   "date_utc": "2026-11-10",
   "hour_utc": 0,
   "limitation": "Raw address transactions are not yet decoded into swaps/trades; no PnL or final entry decision is produced.",
-  "next_index": 310,
-  "processed_candidates": 310,
-  "remaining_candidates": 79,
+  "next_index": 315,
+  "processed_candidates": 315,
+  "remaining_candidates": 74,
   "selected_for_deep_collection": 389
 }
