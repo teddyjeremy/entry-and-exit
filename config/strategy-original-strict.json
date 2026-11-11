@@ -1,0 +1,83 @@
+{
+  "version": "original-strict-v1",
+  "mode": "paper_only",
+  "price": {
+    "evaluation_seconds_after_launch": 60,
+    "impulse_min_pct": 20,
+    "pullback_min_pct": 10,
+    "pullback_max_pct": 40,
+    "reclaim_min_pct": 1,
+    "reclaim_reference": "previous_5_second_high",
+    "signal_age_seconds_min": 1,
+    "signal_age_seconds_max": 2,
+    "recheck_next_observation": true
+  },
+  "flow": {
+    "window_seconds": 2,
+    "consecutive_windows": 3,
+    "buy_sell_quote_volume_ratio_strictly_greater_than": 3,
+    "unique_buyers_per_window_min": 3,
+    "sellers_at_most_fraction_of_buyers": 0.5,
+    "distinct_buyers_across_windows_min": 5,
+    "largest_buyer_share_max_pct": 72
+  },
+  "wallet_safety": {
+    "creator_sell_supply_pct_reject_above": 0.05,
+    "linked_wallet_sell_supply_pct_reject_above": 0.25,
+    "high_confidence_cluster_sell_supply_pct_reject_above": 0.25,
+    "cluster_buy_volume_pct_reject_above": 35,
+    "cluster_holdings_pct_reject_above": 20,
+    "individual_wallet_holdings_pct_reject_above": 20,
+    "creator_evidence_confidence_min_pct": 70,
+    "missing_or_low_confidence_creator_action": "WATCH"
+  },
+  "execution": {
+    "entry_impact_max_pct": 2,
+    "exit_impact_max_pct": 2,
+    "buy_tax_max_pct": 2,
+    "sell_tax_max_pct": 2,
+    "round_trip_cost_max_pct": 4,
+    "executable_exit_required": true
+  },
+  "exit": {
+    "hard_stop_pct": -5,
+    "trailing_activation_pct": 10,
+    "trailing_distance_from_high_pct": 40,
+    "profit_locks": [
+      {
+        "reached_pct": 10,
+        "lock_pct": 5
+      },
+      {
+        "reached_pct": 50,
+        "lock_pct": 15
+      },
+      {
+        "reached_pct": 100,
+        "lock_pct": 40
+      },
+      {
+        "reached_pct": 200,
+        "lock_pct": 80
+      }
+    ],
+    "max_hold_seconds": 300,
+    "stop_never_moves_down": true
+  },
+  "portfolio": {
+    "initial_max_concurrent_positions": 1,
+    "concurrent_positions_increment_per_portfolio_doubling": 1,
+    "stake_increase_per_portfolio_doubling_pct": 50,
+    "max_stake_usd": 100,
+    "wait_for_slot_before_entry": true,
+    "never_buy_same_mint_twice": true,
+    "initial_balance_usd": null,
+    "initial_stake_usd": null
+  },
+  "fail_closed": {
+    "stale_feed_action": "NO_TRADE",
+    "missing_required_evidence_action": "WATCH",
+    "migration_or_invalid_route_action": "EMERGENCY_EXIT",
+    "real_orders_enabled": false
+  }
+}
