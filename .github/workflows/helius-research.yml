@@ -4,12 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       pages_per_mint:
-        description: Maximum new Helius history pages to collect per mint in this run
+        description: Maximum new Helius history pages to collect per configured mint
         required: false
         default: "10"
+      cohort_date:
+        description: UTC launch date (YYYY-MM-DD)
+        required: false
+        default: "2026-11-10"
+      cohort_hour_utc:
+        description: UTC launch hour (0-23)
+        required: false
+        default: "0"
   push:
     paths:
       - "config/mints.json"
+      - "hourly_cohort.py"
       - ".github/workflows/helius-research.yml"
   schedule:
     - cron: "17 */6 * * *"
@@ -40,13 +49,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Collect Helius data
+      - name: Collect configured Helius research
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
           PAGES_PER_MINT: ${{ github.event.inputs.pages_per_mint || '10' }}
         run: python collector.py
 
-      - name: Commit resumable data and checkpoints
+      - name: Commit resumable configured data and checkpoints
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -58,10 +67,45 @@ jobs:
             git push
           fi
 
-      - name: Upload research snapshot
+      - name: Upload configured research snapshot
         uses: actions/upload-artifact@v4
         with:
           name: helius-research-data
           path: data/
+          if-no-files-found: error
+          retention-days: 30
+
+  hourly-cohort:
+    # Run the requested historical cohort on manual dispatch or when this
+    # pipeline is first introduced/updated. The six-hour collector schedule
+    # does not repeatedly re-run the historical cohort.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.modified, 'hourly_cohort.py')) || (github.event_name == 'push' && contains(github.event.head_commit.added, 'hourly_cohort.py'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Screen UTC launch hour and collect bounded Helius history
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+          COHORT_DATE: ${{ github.event.inputs.cohort_date || '2026-11-10' }}
+          COHORT_HOUR_UTC: ${{ github.event.inputs.cohort_hour_utc || '0' }}
+          MAX_PAGES_PER_ADDRESS: "20"
+        run: python hourly_cohort.py
+
+      - name: Upload hourly cohort and coin evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: hourly-cohort-${{ github.event.inputs.cohort_date || '2026-11-10' }}-${{ github.event.inputs.cohort_hour_utc || '0' }}-utc
+          path: data/hourly/
           if-no-files-found: error
           retention-days: 30
