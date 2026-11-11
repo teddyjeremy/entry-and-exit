@@ -1,0 +1,17 @@
+{
+  "address": "5ytp6fuVkciFbE4gFwK4Dh4eiDoocyBBnoy1hbCDDU8f",
+  "before_signature": null,
+  "completed": true,
+  "label": "bonding_curve",
+  "page_files": [
+    "page-0001.jsonl"
+  ],
+  "page_limit_hit": false,
+  "pages_fetched": 1,
+  "reached_start_of_window": true,
+  "transactions_saved": 40,
+  "window_end": 1794272748,
+  "window_end_utc": "2026-11-10T01:05:48+00:00",
+  "window_start": 1794269148,
+  "window_start_utc": "2026-11-10T00:05:48+00:00"
+}
