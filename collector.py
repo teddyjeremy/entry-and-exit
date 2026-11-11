@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -27,6 +28,18 @@ PUMP_PROGRAM_ID = Pubkey.from_string("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6
 MAX_RETRIES = 5
 SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "entry-and-exit-research/1.0"})
+
+
+def redact_sensitive(value: Any) -> Any:
+    if isinstance(value, str):
+        if API_KEY:
+            value = value.replace(API_KEY, '[REDACTED]')
+        return re.sub(r'(?i)(api-key=)[^&\\s]+', r'\\1[REDACTED]', value)
+    if isinstance(value, dict):
+        return {key: redact_sensitive(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [redact_sensitive(item) for item in value]
+    return value
 
 
 def utc_now() -> str:
@@ -63,9 +76,9 @@ def request_json(url: str, *, params: dict[str, Any] | None = None,
         except (requests.RequestException, ValueError) as exc:
             last_error = exc
             delay = min(2 ** attempt, 30)
-            print(f"Request error ({exc}); retrying in {delay}s", flush=True)
+            print(redact_sensitive(f"Request error ({exc}); retrying in {delay}s"), flush=True)
             time.sleep(delay)
-    raise RuntimeError(f"Helius request failed after {MAX_RETRIES} attempts: {last_error}")
+    raise RuntimeError(redact_sensitive(f"Helius request failed after {MAX_RETRIES} attempts: {last_error}"))
 
 
 def collect_asset(mint: str, mint_dir: Path) -> None:
@@ -141,9 +154,10 @@ def collect_history(address: str, label: str, mint_dir: Path, history_dir: Path 
 
         if not records:
             checkpoint["completed"] = True
+            checkpoint["completion_reason"] = "empty_page_confirmed"
             checkpoint["completed_at"] = utc_now()
             write_json(checkpoint_path, checkpoint)
-            print(f"No more history for {label}; marked complete.")
+            print(f"No more history for {label}; empty page confirmed completion.")
             break
 
         page_number = int(checkpoint["pages_collected"]) + 1
@@ -165,9 +179,12 @@ def collect_history(address: str, label: str, mint_dir: Path, history_dir: Path 
         checkpoint["last_page_count"] = len(records)
         checkpoint["last_signature"] = last_signature
         checkpoint["last_collected_at"] = utc_now()
-        checkpoint["completed"] = len(records) < PAGE_LIMIT
-        if checkpoint["completed"]:
-            checkpoint["completed_at"] = utc_now()
+        # A short page is not proof that history ended; require a subsequent empty page.
+        checkpoint["completed"] = False
+        checkpoint["completion_reason"] = (
+            "short_page_requires_empty_confirmation" if len(records) < PAGE_LIMIT
+            else "more_pages_may_exist"
+        )
         write_json(checkpoint_path, checkpoint)
 
         pages_this_run += 1
