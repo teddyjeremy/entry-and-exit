@@ -9,14 +9,15 @@ bonding-curve transfer. Ambiguous transfers are counted, never silently guessed.
 from __future__ import annotations
 
 import json
+import os
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent
-DAY = "2026-11-10"
-HOUR = 0
+DAY = os.environ.get("COHORT_DATE", "2026-11-10")
+HOUR = int(os.environ.get("COHORT_HOUR_UTC", "0"))
 COHORT_DIR = ROOT / "data" / "hourly" / DAY / f"{HOUR:02d}"
 ANALYSIS_DIR = COHORT_DIR / "analysis"
 LAMPORTS_PER_SOL = 1_000_000_000
