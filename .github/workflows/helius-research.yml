@@ -19,10 +19,15 @@ on:
   push:
     paths:
       - "hourly_cohort.py"
+      - "analyze_hourly_cohort.py"
+      - "replay_hourly_strategy.py"
+      - "tests/**"
+      - ".github/workflows/helius-research.yml"
   pull_request:
     paths:
       - "hourly_cohort.py"
       - "analyze_hourly_cohort.py"
+      - "replay_hourly_strategy.py"
       - "tests/**"
       - ".github/workflows/helius-research.yml"
   schedule:
@@ -47,7 +52,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Compile and test research scripts
         run: |
-          python -m py_compile hourly_cohort.py analyze_hourly_cohort.py
+          python -m py_compile hourly_cohort.py analyze_hourly_cohort.py replay_hourly_strategy.py
           python -m unittest discover -s tests -v
 
   collect:
@@ -173,14 +178,19 @@ jobs:
           COHORT_DATE: ${{ github.event.inputs.cohort_date || '2026-11-10' }}
           COHORT_HOUR_UTC: ${{ github.event.inputs.cohort_hour_utc || '0' }}
         run: python analyze_hourly_cohort.py
-      - name: Commit decoded analysis back to main
+      - name: Replay agreed entry and exit rules against every collected coin
+        env:
+          COHORT_DATE: ${{ github.event.inputs.cohort_date || '2026-11-10' }}
+          COHORT_HOUR_UTC: ${{ github.event.inputs.cohort_hour_utc || '0' }}
+        run: python replay_hourly_strategy.py
+      - name: Commit decoded analysis and strategy replay back to main
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "data/hourly/"
           if ! git diff --cached --quiet; then
-            git commit -m "Add decoded hourly cohort trade evidence"
+            git commit -m "Add decoded hourly cohort analysis and strategy replay"
             git fetch origin main
             git rebase origin/main
             git push origin HEAD:main
