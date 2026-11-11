@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -34,7 +33,7 @@ def redact_sensitive(value: Any) -> Any:
     if isinstance(value, str):
         if API_KEY:
             value = value.replace(API_KEY, '[REDACTED]')
-        return re.sub(r'(?i)(api-key=)[^&\\s]+', r'\\1[REDACTED]', value)
+        return value
     if isinstance(value, dict):
         return {key: redact_sensitive(item) for key, item in value.items()}
     if isinstance(value, list):
