@@ -72,7 +72,9 @@ jobs:
           retention-days: 30
 
   hourly-cohort:
-    if: github.event_name != 'schedule'
+    # The collector commits checkpointed data directly to main. Do not run
+    # this job on feature branches or it could bypass the PR by pushing to main.
+    if: github.event_name != 'schedule' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
