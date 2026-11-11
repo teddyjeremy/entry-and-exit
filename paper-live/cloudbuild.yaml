@@ -1,16 +1,16 @@
 steps:
   - name: gcr.io/cloud-builders/docker
-    args: ["build","-t","$LOCATION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA","paper-live"]
+    args: ["build","-t","$_REGION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA","paper-live"]
   - name: gcr.io/cloud-builders/docker
-    args: ["push","$LOCATION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA"]
+    args: ["push","$_REGION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA"]
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
       - run
       - deploy
       - paper-live-engine
-      - --image=$LOCATION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA
-      - --region=$LOCATION
+      - --image=$_REGION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA
+      - --region=$_REGION
       - --platform=managed
       - --min=1
       - --max=1
@@ -22,6 +22,6 @@ steps:
       - --service-account=paper-live-engine@$PROJECT_ID.iam.gserviceaccount.com
       - --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID,PAPER_MODE=true
       - --set-secrets=HELIUS_API_KEY=helius-api-key:latest,DASHBOARD_API_TOKEN=paper-dashboard-token:latest
-      - --no-allow-unauthenticated
+      - --allow-unauthenticated
 images:
-  - "$LOCATION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA"
+  - "$_REGION-docker.pkg.dev/$PROJECT_ID/paper-live/engine:$COMMIT_SHA"
