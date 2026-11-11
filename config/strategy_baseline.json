@@ -26,5 +26,10 @@
     "Volume and unique buyers must be deduplicated by finalized transaction signature and wallet.",
     "A Jupiter or other router is not itself proof of a non-Pump.fun launch; inspect the underlying program and bonding-curve accounts.",
     "This file is a documented baseline only; the current repository collector does not execute this strategy."
-  ]
+  ],
+  "freshness": {
+    "maximum_rpc_data_age_seconds": 2,
+    "maximum_signal_age_seconds": 2,
+    "maximum_quote_age_seconds": 2
+  }
 }
