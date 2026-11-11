@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Screen a UTC launch-hour cohort and collect only a small qualified shortlist.
+"""Screen a UTC launch-hour cohort and collect every qualified launch progressively.
 
-The cohort index is lightweight. Deep Helius history is limited to the top
-MAX_DEEP_CANDIDATES qualifying launches and is persisted in resumable batches.
+The cohort index is lightweight. All qualifying launches are queued; BATCH_SIZE
+controls only how many coins are processed before a checkpoint is saved.
 This is research evidence, not a BUY signal or PnL calculation.
 """
 from __future__ import annotations
@@ -26,7 +26,6 @@ DAY = os.environ.get("COHORT_DATE", "2026-11-10")
 HOUR = int(os.environ.get("COHORT_HOUR_UTC", "0"))
 MIN_BUYERS_10S = int(os.environ.get("MIN_BUYERS_10S", "5"))
 MAX_BUNDLE_SHARE = float(os.environ.get("MAX_BUNDLE_SHARE", "0.20"))
-MAX_DEEP_CANDIDATES = int(os.environ.get("MAX_DEEP_CANDIDATES", "50"))
 BATCH_SIZE = int(os.environ.get("BATCH_SIZE", "5"))
 MAX_PAGES_PER_ADDRESS = int(os.environ.get("MAX_PAGES_PER_ADDRESS", "20"))
 PAGE_SIZE = 100
@@ -220,15 +219,15 @@ def build_cohort(dataset: dict[str, Any], cohort_dir: Path, start_ts: int, end_t
             qualified.append(coin)
         evaluated.append(coin)
 
-    # Deterministic prioritization: strongest first-10s buyer count, then
-    # lowest disclosed bundle share, then earliest launch. No random sampling.
+    # Deterministic ordering: strongest first-10s buyer count, then lowest
+    # disclosed bundle share, then earliest launch. Collect every qualifier.
     qualified.sort(key=lambda x: (
         -int(x.get("buyers_first_10s") or 0),
         float(x.get("bundle_supply_share")),
         int(x["created"]),
         x["mint"],
     ))
-    selected = qualified[:MAX_DEEP_CANDIDATES]
+    selected = qualified
     selected_mints = {x["mint"] for x in selected}
 
     ledger = cohort_dir / "cohort.jsonl"
@@ -238,7 +237,7 @@ def build_cohort(dataset: dict[str, Any], cohort_dir: Path, start_ts: int, end_t
             launch_ts = int(coin["created"])
             status = coin["screen_status"]
             if status == "QUALIFIED":
-                status = "SHORTLISTED_FOR_DEEP_COLLECTION" if coin["mint"] in selected_mints else "QUALIFIED_OVER_COLLECTION_CAP"
+                status = "QUEUED_FOR_DEEP_COLLECTION" if coin["mint"] in selected_mints else "QUALIFIED"
             record = {
                 **coin,
                 "cohort_date_utc": DAY, "cohort_hour_utc": HOUR,
@@ -256,13 +255,13 @@ def build_cohort(dataset: dict[str, Any], cohort_dir: Path, start_ts: int, end_t
         "window_start_utc": utc_iso(start_ts), "window_end_utc_exclusive": utc_iso(end_ts),
         "dataset_complete": dataset.get("complete"), "dataset_complete_to": dataset.get("complete_to"),
         "launches_in_hour": len(launches), "initial_screen_counts": counts,
-        "qualified_before_cap": len(qualified), "selected_for_deep_collection": len(selected),
-        "qualified_not_collected_due_to_cap": max(0, len(qualified) - len(selected)),
+        "qualified_before_cap": len(qualified), "queued_for_deep_collection": len(selected),
         "screening_rules": {
             "minimum_buyers_first_10s": MIN_BUYERS_10S,
             "maximum_bundle_supply_share": MAX_BUNDLE_SHARE,
             "missing_or_invalid_bundle_evidence": "WATCH; not deep-collected",
-            "deep_collection_cap": MAX_DEEP_CANDIDATES,
+            "deep_collection_cap": None,
+            "batch_size": BATCH_SIZE,
             "priority": "buyers_first_10s descending, bundle share ascending, launch time ascending",
         },
         "important": "This is a strict first-pass research screen only. It does not evaluate decoded buy/sell pressure, wallet clusters, liquidity, execution costs, or BUY eligibility.",
@@ -288,8 +287,8 @@ def main() -> int:
     if not HELIUS_API_KEY:
         print("HELIUS_API_KEY is not set", file=sys.stderr)
         return 2
-    if min(MAX_PAGES_PER_ADDRESS, BATCH_SIZE, MAX_DEEP_CANDIDATES) < 1:
-        print("Page, batch, and candidate limits must be at least 1", file=sys.stderr)
+    if min(MAX_PAGES_PER_ADDRESS, BATCH_SIZE) < 1:
+        print("Page and batch limits must be at least 1", file=sys.stderr)
         return 2
 
     start_ts = int(day_dt.timestamp()) + HOUR * 3600
@@ -298,11 +297,21 @@ def main() -> int:
     cohort_dir.mkdir(parents=True, exist_ok=True)
     queue_path = cohort_dir / "candidate-queue.json"
 
-    if queue_path.exists():
-        candidates = json.loads(queue_path.read_text(encoding="utf-8"))
-    else:
+    rebuild_queue = not queue_path.exists()
+    if not rebuild_queue:
+        summary_path = cohort_dir / "cohort-summary.json"
+        queue_now = json.loads(queue_path.read_text(encoding="utf-8"))
+        if summary_path.exists():
+            old_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            expected = int(old_summary.get("qualified_before_cap", old_summary.get("queued_for_deep_collection", len(queue_now))))
+            rebuild_queue = len(queue_now) != expected
+        else:
+            rebuild_queue = True
+    if rebuild_queue:
         dataset = get_json(f"https://pumpdata.fun/launches/{DAY}.json")
         candidates = build_cohort(dataset, cohort_dir, start_ts, end_ts)
+    else:
+        candidates = json.loads(queue_path.read_text(encoding="utf-8"))
 
     checkpoint_path = cohort_dir / "checkpoint.json"
     checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8")) if checkpoint_path.exists() else {"next_index": 0}
@@ -323,14 +332,14 @@ def main() -> int:
         mint_result = collect_address_history(mint, "mint", mint_dir, launch_ts, cutoff_ts)
         write_json(mint_dir / "manifest.json", {
             "mint": mint, "creator": coin.get("creator"), "created": launch_ts,
-            "created_utc": utc_iso(launch_ts), "screening_status": "SHORTLISTED_FOR_DEEP_COLLECTION",
+            "created_utc": utc_iso(launch_ts), "screening_status": "QUEUED_FOR_DEEP_COLLECTION",
             "bonding_curve": curve, "data_cutoff": cutoff_ts,
             "mint_history": mint_result, "collection_status": "MINT_COMPLETE" if mint_result.get("completed") else "MINT_INCOMPLETE",
         })
         curve_result = collect_address_history(curve, "bonding_curve", mint_dir, launch_ts, cutoff_ts)
         manifest = {
             "mint": mint, "creator": coin.get("creator"), "created": launch_ts,
-            "created_utc": utc_iso(launch_ts), "screening_status": "SHORTLISTED_FOR_DEEP_COLLECTION",
+            "created_utc": utc_iso(launch_ts), "screening_status": "QUEUED_FOR_DEEP_COLLECTION",
             "data_cutoff": cutoff_ts, "data_cutoff_utc": utc_iso(cutoff_ts),
             "bonding_curve": curve, "mint_history": mint_result, "curve_history": curve_result,
             "collection_status": "COMPLETE" if mint_result.get("completed") and curve_result.get("completed") else "INCOMPLETE",

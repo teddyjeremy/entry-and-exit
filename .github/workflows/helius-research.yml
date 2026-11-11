@@ -91,6 +91,10 @@ jobs:
           if not 0 <= hour <= 23:
               raise SystemExit("COHORT_HOUR_UTC must be 0..23")
           PY
+      - name: Sync latest main before collecting
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
       - name: Collect in small resumable batches and persist each checkpoint
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
@@ -100,13 +104,15 @@ jobs:
           BATCH_SIZE: "5"
           MIN_BUYERS_10S: "5"
           MAX_BUNDLE_SHARE: "0.20"
-          MAX_DEEP_CANDIDATES: "50"
         shell: bash
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           while true; do
+            # Always resume from the latest committed checkpoint before processing a batch.
+            git fetch origin main
+            git reset --hard origin/main
             set +e
             python hourly_cohort.py
             rc=$?
