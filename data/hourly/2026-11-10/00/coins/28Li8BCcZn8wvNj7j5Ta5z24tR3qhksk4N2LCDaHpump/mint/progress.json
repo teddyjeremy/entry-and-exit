@@ -1,11 +1,11 @@
 {
   "address": "28Li8BCcZn8wvNj7j5Ta5z24tR3qhksk4N2LCDaHpump",
-  "before_signature": "2mnmWHcKUWi9ZXbTpbkfsVMQs5Ti7b69vNiERWnoQ2HPYfKtwAmd1VHcYYcDDzuCJiaUq8thGizxHFD1qUFpbhMb",
+  "before_signature": "3RPyuw61GXdbYDxvK6uZvPwgTvRPqa5fqGPU7kcJX8tfwoSbYGSrX8PYjNrXfz64AW9X92qFP4CndAkuTwcTDyFP",
   "completed": false,
   "label": "mint",
   "page_files": [],
   "page_limit_hit": true,
-  "pages_fetched": 120,
+  "pages_fetched": 140,
   "reached_start_of_window": false,
   "transactions_saved": 0,
   "window_end": 1794274775,
