@@ -1,0 +1,88 @@
+{
+  "collected_at": "2026-11-11T08:40:05.979194+00:00",
+  "mint": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash",
+  "response": {
+    "id": "entry-and-exit-research",
+    "jsonrpc": "2.0",
+    "result": {
+      "authorities": [],
+      "burnt": false,
+      "compression": {
+        "asset_hash": "",
+        "compressed": false,
+        "creator_hash": "",
+        "data_hash": "",
+        "eligible": false,
+        "leaf_id": 0,
+        "seq": 0,
+        "tree": ""
+      },
+      "content": {
+        "$schema": "https://schema.metaplex.com/nft1.0.json",
+        "files": [
+          {
+            "cdn_uri": "https://cdn.helius-rpc.com/cdn-cgi/image//https://gateway.pinata.cloud/ipfs/bafkreigmjjsxc2frnbzdcdrdgdk3xafjjuhdzawng4ksypsiurzh4t4bja",
+            "mime": "image/png",
+            "uri": "https://gateway.pinata.cloud/ipfs/bafkreigmjjsxc2frnbzdcdrdgdk3xafjjuhdzawng4ksypsiurzh4t4bja"
+          }
+        ],
+        "json_uri": "https://gateway.pinata.cloud/ipfs/bafkreica5gzrymyivrl36vehs43orlp5obabo2zbtx64p3sqog3r6xg7dq",
+        "links": {
+          "image": "https://gateway.pinata.cloud/ipfs/bafkreigmjjsxc2frnbzdcdrdgdk3xafjjuhdzawng4ksypsiurzh4t4bja"
+        },
+        "metadata": {
+          "description": "Launch tokens from X: tag @UseCashtags with a $CASHTAG. cashtags.family",
+          "json_name": "CASHTAG",
+          "name": "CASHTAG",
+          "symbol": "CASHTAG"
+        }
+      },
+      "creators": [],
+      "grouping": [],
+      "id": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash",
+      "interface": "FungibleToken",
+      "last_indexed_slot": 468059611,
+      "mint_extensions": {
+        "metadata": {
+          "additional_metadata": [],
+          "mint": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash",
+          "name": "CASHTAG",
+          "symbol": "CASHTAG",
+          "update_authority": null,
+          "uri": "https://gateway.pinata.cloud/ipfs/bafkreica5gzrymyivrl36vehs43orlp5obabo2zbtx64p3sqog3r6xg7dq"
+        },
+        "metadata_pointer": {
+          "authority": null,
+          "metadata_address": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash"
+        }
+      },
+      "mutable": true,
+      "ownership": {
+        "delegate": null,
+        "delegated": false,
+        "frozen": false,
+        "owner": "",
+        "ownership_model": "token"
+      },
+      "royalty": {
+        "basis_points": 0,
+        "locked": false,
+        "percent": 0.0,
+        "primary_sale_happened": false,
+        "royalty_model": "creators",
+        "target": null
+      },
+      "supply": null,
+      "token_info": {
+        "decimals": 6,
+        "price_info": {
+          "currency": "USDC",
+          "price_per_token": 0.00039139675
+        },
+        "supply": 965482012028610,
+        "symbol": "CASHTAG",
+        "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+      }
+    }
+  }
+}
