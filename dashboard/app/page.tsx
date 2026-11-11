@@ -30,7 +30,7 @@ export default function Home() {
       <article className="metric"><span>Engine</span><strong>{status?.engine_state ?? 'CONNECTING'}</strong><small>{connected ? 'Cloud engine reachable' : 'Waiting for backend connection'}</small></article>
       <article className="metric"><span>Market feed</span><strong>{status?.feed_state ?? 'CHECKING'}</strong><small>Must be decoder-validated before entries</small></article>
       <article className="metric"><span>Open paper positions</span><strong>{status?.open_positions ?? 0}</strong><small>Original portfolio concurrency rules</small></article>
-      <article className="metric"><span>Paper portfolio</span><strong>${(status?.portfolio_value_usd ?? 1).toFixed(2)}</strong><small>Initial paper balance placeholder</small></article>
+      <article className="metric"><span>Paper portfolio</span><strong>{status?.portfolio_value_usd == null ? "NOT SET" : `${status.portfolio_value_usd.toFixed(2)}`}</strong><small>Set the starting balance before paper entries</small></article>
     </section>
     <section className="panel"><div className="panel-head"><div><div className="eyebrow">STRATEGY CONFIGURATION</div><h2>Original rules only</h2></div><span className="tag">STRICT</span></div>
       <div className="rule-grid"><div><b>Price formation</b><p>+20% impulse · 10–40% pullback · reclaim confirmation</p></div><div><b>Buyer confirmation</b><p>3 consecutive 2-second windows · 3 buyers per window · 5 distinct overall</p></div><div><b>Wallet concentration</b><p>Largest buyer ≤72% · creator and linked-wallet rejection checks</p></div><div><b>Risk and exits</b><p>−5% hard stop · 40% trailing distance after +10% · 300-second maximum hold</p></div></div>
