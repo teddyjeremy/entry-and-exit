@@ -83,6 +83,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - name: Test decoder and compile research scripts
+        run: |
+          python -m py_compile hourly_cohort.py analyze_hourly_cohort.py
+          python -m unittest discover -s tests -v
       - name: Validate cohort settings
         env:
           COHORT_DATE: ${{ github.event.inputs.cohort_date || '2026-11-10' }}
