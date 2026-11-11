@@ -49,3 +49,16 @@ No live-order code is included.
 
 ## Vercel project
 The dashboard is linked to the Vercel project entry-exit-paper-dashboard with root directory paper-live/dashboard. The project has not been deployed yet; the backend URL and token are intentionally not configured until the Cloud Run service and secrets exist.
+
+### Deployment commands
+Set your own project and region; do not paste credentials into chat:
+```bash
+export PROJECT_ID="your-gcp-project-id"
+export REGION="us-central1"
+gcloud config set project "$PROJECT_ID"
+gcloud iam service-accounts create paper-live-engine
+gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:paper-live-engine@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/datastore.user"
+gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:paper-live-engine@$PROJECT_ID.iam.gserviceaccount.com" --role="roles/secretmanager.secretAccessor"
+gcloud builds submit --config=paper-live/cloudbuild.yaml --substitutions=_REGION="$REGION"
+```
+The Cloud Run API is publicly reachable so Vercel can call it, but all dashboard/data/control routes require the bearer token stored in Secret Manager. Only /healthz is public. Set the same token as the Vercel server-only PAPER_API_TOKEN environment variable. Do not expose it as a NEXT_PUBLIC variable.
