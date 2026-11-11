@@ -1,6 +1,6 @@
 import unittest
 
-from analyze_hourly_cohort import decode_transaction
+from analyze_hourly_cohort import decode_curve_state, decode_transaction
 
 
 MINT = "Mint111111111111111111111111111111111111111"
@@ -58,6 +58,27 @@ class DecodeTransactionTests(unittest.TestCase):
         events, quality = decode_transaction(tx, MINT, CURVE, 1000, 4600)
         self.assertEqual(events, [])
         self.assertTrue(quality["failed"])
+
+
+    def test_curve_state_emits_only_relative_reserve_and_price_evidence(self):
+        tx = {
+            "timestamp": 1005, "signature": "curve-buy", "slot": 1,
+            "transactionError": None,
+            "accountData": [
+                {"account": CURVE, "nativeBalanceChange": 1_000_000_000,
+                 "tokenBalanceChanges": [
+                     {"mint": MINT, "userAccount": CURVE,
+                      "rawTokenAmount": {"decimals": 6, "tokenAmount": "-1000000"}}
+                 ]}
+            ],
+            "tokenTransfers": [],
+        }
+        event = decode_curve_state(tx, MINT, CURVE, 1000, 4600)
+        self.assertIsNotNone(event)
+        self.assertEqual(event["curve_native_balance_delta_sol"], 1.0)
+        self.assertEqual(event["curve_token_balance_delta"], -1.0)
+        self.assertEqual(event["implied_curve_price_sol_per_token_estimate"], 1.0)
+        self.assertIn("Relative reserve movement only", event["liquidity_interpretation"])
 
     def test_ambiguous_flow_is_not_guessed(self):
         tx = tx_template(BUYER, 2_000_000, 0, "OtherSource", "OtherDestination", "unknown")
