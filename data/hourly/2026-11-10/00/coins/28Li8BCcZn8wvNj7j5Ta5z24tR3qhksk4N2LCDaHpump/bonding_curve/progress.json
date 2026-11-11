@@ -1,13 +1,16 @@
 {
   "address": "AqKZwUrCiS3qftcAfzaHx1nJRRTbitksFwTe1aPcK2zY",
-  "before_signature": "StdmVigLvW2A5sN5cUdCAyySaEmDfRsdYJQxDGvG9Anh55hZ5PpLLKAisN2hVskkHXRoBPPqZg8s6Uq7WyDTnWM",
-  "completed": false,
+  "before_signature": "5c7yYDfafkUdHTRo78pKyREPf3JCbottPHqbKHB5DTNWxdHWWDnxAJobVdzpKW9x2SxtAyPJdQqCfKr6DjmgWqwS",
+  "completed": true,
   "label": "bonding_curve",
-  "page_files": [],
-  "page_limit_hit": true,
-  "pages_fetched": 140,
-  "reached_start_of_window": false,
-  "transactions_saved": 0,
+  "page_files": [
+    "page-0142.jsonl",
+    "page-0143.jsonl"
+  ],
+  "page_limit_hit": false,
+  "pages_fetched": 143,
+  "reached_start_of_window": true,
+  "transactions_saved": 61,
   "window_end": 1794274775,
   "window_end_utc": "2026-11-10T01:39:35+00:00",
   "window_start": 1794271175,
