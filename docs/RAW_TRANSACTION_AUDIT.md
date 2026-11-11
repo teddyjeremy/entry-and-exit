@@ -49,7 +49,16 @@ The scan deduplicated transaction signatures for the distinct-signature count. T
 
 `strategy/helius_parser.py` now recognizes the nine instruction variants listed in the pinned manifest, but only when the same Pump instruction contains both the configured mint and bonding-curve address. The regression suite includes minimized real Helius instruction samples from TRENCHER for all nine variants, including cases labelled `TRANSFER` / `SYSTEM_PROGRAM`.
 
-The parser remains an instruction-evidence gate, not a complete historical trade parser. It does not decode instruction arguments or estimate SOL amounts, token amounts, market cap, reserves, volume, fees, slippage, or P&L. The IDL commit dates are documentation snapshot dates, not verified on-chain activation slots. Unknown instructions remain unclassified. Do not use this parser alone for historical replay.
+The parser now also checks exact mint/curve/user account positions from the pinned IDL. A separate balance-evidence helper reconciles the trader and curve base-token balance deltas for real buy/sell samples. In the buy sample, trader and curve deltas match at 23,836,088,739 raw units (6 decimals); the sell sample matches at 447,727,370,313 raw units. Native SOL balance changes also sum to the negative network fee for both samples. The helper reports curve and trader SOL deltas separately and does not infer a single gross quote amount from wallet deltas or incomplete nativeTransfers. It does not calculate price, volume, fees by category, slippage, or P&L. The IDL commit dates are documentation snapshot dates, not verified on-chain activation slots. Unknown instructions remain unclassified. Do not use this parser alone for historical replay.
+
+## Amount reconciliation sample findings
+
+Two real Helius transactions were reduced into fixtures under `tests/fixtures/trencher_amount_samples.json`:
+
+- Buy, `buy_exact_quote_in_v3`, slot 468026734: trader received 23,836.088739 tokens; curve token balance decreased by the same raw amount. A 9,900,000-lamport transfer from trader to curve was observed; the curve's net native balance increase was 9,853,556 lamports, while the trader's total native balance change was -10,205,000 lamports. The transaction fee was 18,449 lamports. These are distinct balance/transfer facts, not interchangeable estimates of one trade amount.
+- Sell, `sell_v3`, slot 468026733: trader sold 447,727.370313 tokens; the curve token balance increased by the same raw amount. Curve native balance change was -181,707,219 lamports and trader native balance change was +177,879,387 lamports; transaction fee was 149,608 lamports. Helius did not expose a direct curve-to-trader transfer in its `nativeTransfers` array for this sample, so that array alone is not sufficient to calculate proceeds.
+
+For both samples, the sum of all Helius account-level native balance changes equals the negative transaction fee. The new `strategy/helius_amounts.py` helper verifies base-token balance reconciliation and reports quote-side balance evidence separately. It deliberately does not claim gross quote volume, price, or P&L.
 
 ## Required next validation
 

@@ -13,9 +13,10 @@ This repository is a read-only Helius research collector. It is not a trading bo
 - Add regression tests for secret redaction, short-page completion, repeated cursors, missing signatures, migrated tokens, non-Pump.fun curves, unknown market state, stale quotes/data, missing fields, and threshold failures.
 - Add a fail-closed eligibility preflight function; missing evidence and migrated/non-Pump.fun states cannot be approved.
 - Run those tests in a separate GitHub Actions workflow.
-- Add a conservative Helius Pump instruction evidence parser that recursively inspects nested router calls and recognizes nine IDL-pinned trade variants (legacy buy/sell, v2, v3, and exact-input buys) only when the configured mint and curve appear in the same Pump instruction.
+- Add a conservative Helius Pump instruction evidence parser that recursively inspects nested router calls and recognizes nine IDL-pinned trade variants (legacy buy/sell, v2, v3, and exact-input buys) only when mint and curve occupy their exact IDL account positions; expose the trader and quote mint from the same layout.
 - Add a raw-transaction audit documenting the TRENCHER sample's mixed Helius labels, duplicate signatures, incomplete collection, and parser limitations.
-- Add parser regression tests using real TRENCHER Helius instruction samples for all nine supported variants, plus a pinned Pump IDL manifest. The partial 1,000-record sample contains 976 matching trade instructions in 974 distinct signatures, all in slots before the first observed migration slot; this is not a complete token history.
+- Add parser regression tests using real TRENCHER Helius instruction samples for all nine supported variants, plus a pinned Pump IDL manifest and account-role layouts. The partial 1,000-record sample contains 976 matching trade instructions in 974 distinct signatures, all in slots before the first observed migration slot; this is not a complete token history.
+- Add a balance-evidence helper that reconciles trader/curve base-token balance changes from Helius accountData and separately reports SOL/quote balance evidence; real buy and sell fixtures verify token amounts and network-fee reconciliation. It does not infer trade price, gross quote volume, or P&L.
 - Add portfolio admission rules: one concurrent position initially, plus one position for each $5 milestone of realized equity; a position slot is occupied until exit is confirmed.
 - Enforce one entry per mint for the lifetime of the strategy, including after exit; the pure policy rejects previously traded mints.
 - Add 11 portfolio-policy regression tests and store the policy in `config/strategy_baseline.json`.
@@ -82,7 +83,8 @@ See `config/strategy_baseline.json`. These are experimental research filters, no
 
 - Research collector: safety fixes and regression tests added in this branch; CI passed. Real-data pagination fixtures and broader collector validation remain.
 - Eligibility preflight: implemented as a pure fail-closed gate; it still requires a trusted parser to populate its snapshot fields.
-- Pump instruction evidence parser: recognizes nine pinned legacy/v2/v3 Pump trade variants and has real Helius fixtures; argument decoding and quote-asset/token balance reconciliation remain incomplete.
+- Pump instruction evidence parser: recognizes nine pinned legacy/v2/v3 Pump trade variants, validates exact IDL account roles, and has real Helius fixtures.
+- Helius balance evidence: trader/curve token deltas reconcile for real buy/sell samples; quote-side evidence is kept separate and gross quote accounting, fee attribution, and P&L remain incomplete.
 - Portfolio admission policy: implemented and tested as a pure gate; persistent ledger integration, atomic reservation, and exit-confirmation handling remain part of the paper engine.
 - Trade stake sizing: implemented and unit-tested as a pure calculation; the future paper engine must apply it using realized equity before every entry.
 - Pump IDL snapshots: pinned legacy and current public IDL revisions; commit dates are documentation snapshots, not verified on-chain activation boundaries.

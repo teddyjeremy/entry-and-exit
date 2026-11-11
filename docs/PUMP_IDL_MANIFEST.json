@@ -9,7 +9,12 @@
       "commit": "cb188ce08b5069196eef1f3e4a0c43b70099793b",
       "commit_date_utc": "2026-09-29T11:50:38Z",
       "git_blob_sha": "2f1c65d4ff209d0f233c0e95552dd82873e4afb5",
-      "instructions": ["buy", "sell", "buy_v2", "sell_v2"]
+      "instructions": [
+        "buy",
+        "sell",
+        "buy_v2",
+        "sell_v2"
+      ]
     },
     {
       "label": "v3 and exact-input trade interface",
@@ -17,9 +22,15 @@
       "commit_date_utc": "2026-10-13T15:37:48Z",
       "git_blob_sha": "bb79d04e5a4ef8b286d67511757c23a15672ef51",
       "instructions": [
-        "buy", "sell", "buy_v2", "sell_v2",
-        "buy_v3", "sell_v3", "buy_exact_sol_in",
-        "buy_exact_quote_in_v2", "buy_exact_quote_in_v3"
+        "buy",
+        "sell",
+        "buy_v2",
+        "sell_v2",
+        "buy_v3",
+        "sell_v3",
+        "buy_exact_sol_in",
+        "buy_exact_quote_in_v2",
+        "buy_exact_quote_in_v3"
       ]
     }
   ],
@@ -40,5 +51,61 @@
     "A recognized instruction must contain the configured mint and bonding-curve address in its own account list.",
     "The TRENCHER sample is incomplete (10 pages, 1,000 records, 998 distinct signatures); observed instruction counts are not complete token history or profitability evidence.",
     "The parser does not treat PumpSwap instructions as original bonding-curve swaps."
-  ]
+  ],
+  "account_layouts": {
+    "buy": {
+      "mint_index": 2,
+      "bonding_curve_index": 3,
+      "user_index": 6,
+      "quote_mint_index": null
+    },
+    "sell": {
+      "mint_index": 2,
+      "bonding_curve_index": 3,
+      "user_index": 6,
+      "quote_mint_index": null
+    },
+    "buy_v2": {
+      "mint_index": 1,
+      "bonding_curve_index": 10,
+      "user_index": 13,
+      "quote_mint_index": 2
+    },
+    "sell_v2": {
+      "mint_index": 1,
+      "bonding_curve_index": 10,
+      "user_index": 13,
+      "quote_mint_index": 2
+    },
+    "buy_v3": {
+      "mint_index": 1,
+      "bonding_curve_index": 5,
+      "user_index": 8,
+      "quote_mint_index": 2
+    },
+    "sell_v3": {
+      "mint_index": 1,
+      "bonding_curve_index": 5,
+      "user_index": 8,
+      "quote_mint_index": 2
+    },
+    "buy_exact_sol_in": {
+      "mint_index": 2,
+      "bonding_curve_index": 3,
+      "user_index": 6,
+      "quote_mint_index": null
+    },
+    "buy_exact_quote_in_v2": {
+      "mint_index": 1,
+      "bonding_curve_index": 10,
+      "user_index": 13,
+      "quote_mint_index": 2
+    },
+    "buy_exact_quote_in_v3": {
+      "mint_index": 1,
+      "bonding_curve_index": 5,
+      "user_index": 8,
+      "quote_mint_index": 2
+    }
+  }
 }
