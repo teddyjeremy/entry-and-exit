@@ -14,6 +14,11 @@
       "label": "failed_coin_3",
       "mint": "HHw6DwCSjgUPUHvTAVeWUUbua7ap7FRG8h7HA6sqpump",
       "outcome": "user_supplied_bad_coin"
+    },
+    {
+      "label": "positive_coin_cash_tag",
+      "mint": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash",
+      "outcome": "user_supplied_positive_example"
     }
   ]
 }
