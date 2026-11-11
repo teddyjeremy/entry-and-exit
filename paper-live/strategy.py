@@ -110,7 +110,8 @@ def evaluate_entry(events: list[TradeEvent], launch_ts: float, now: float,
         return {"decision":"WATCH","reason":"MISSING_PREVIOUS_5S_HIGH"}
     hold_level=max(prior)*(1+rules.reclaim_pct/100)
     latest=[e for e in events if now-2.0<=e.timestamp<=now]
-    if not latest or max(e.price_sol for e in latest)<hold_level:
+    latest_event=max(latest,key=lambda e:e.timestamp) if latest else None
+    if latest_event is None or latest_event.price_sol<hold_level:
         return {"decision":"WATCH","reason":"NEXT_OBSERVATION_FAILED_RECLAIM_RECHECK"}
     buyers=set(); wallet_buy=defaultdict(float); total_buy=0.0; checks=[]
     for n,b in enumerate(flow,1):
