@@ -1,0 +1,30 @@
+{
+  "profile": "recommended",
+  "purpose": "paper_research_baseline_only",
+  "live_trading_enabled": false,
+  "market_filters": {
+    "minimum_market_cap_usd": 5000,
+    "minimum_real_bonding_curve_sol_reserves": 5,
+    "minimum_volume_sol_rolling_30_seconds": 5,
+    "minimum_unique_buyers_rolling_30_seconds": 15
+  },
+  "execution_guards": {
+    "maximum_entry_price_impact_percent": 2,
+    "maximum_exit_price_impact_percent": 2,
+    "maximum_round_trip_cost_percent": 4,
+    "require_fresh_buy_quote": true,
+    "require_fresh_sell_quote_for_full_position": true,
+    "reject_if_migrated": true,
+    "require_original_pump_fun_bonding_curve": true,
+    "reject_if_market_state_unknown": true,
+    "reject_if_rpc_data_stale": true
+  },
+  "notes": [
+    "These thresholds are experimental filters, not evidence of profitability.",
+    "Market cap must be calculated consistently from circulating supply and price.",
+    "Liquidity means real bonding-curve SOL reserves, never virtual reserves.",
+    "Volume and unique buyers must be deduplicated by finalized transaction signature and wallet.",
+    "A Jupiter or other router is not itself proof of a non-Pump.fun launch; inspect the underlying program and bonding-curve accounts.",
+    "This file is a documented baseline only; the current repository collector does not execute this strategy."
+  ]
+}
