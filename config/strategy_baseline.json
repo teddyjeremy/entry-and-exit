@@ -31,5 +31,23 @@
     "maximum_rpc_data_age_seconds": 2,
     "maximum_signal_age_seconds": 2,
     "maximum_quote_age_seconds": 2
+  },
+  "portfolio_rules": {
+    "starting_max_concurrent_positions": 1,
+    "realized_equity_milestone_usd": 5,
+    "additional_positions_per_milestone": 1,
+    "equity_basis": "realized_equity_only",
+    "maximum_concurrent_positions_formula": "starting_max_concurrent_positions + floor(realized_portfolio_usd / realized_equity_milestone_usd)",
+    "one_entry_per_mint_lifetime": true,
+    "reentry_after_exit_allowed": false,
+    "slot_released_only_after_confirmed_exit": true,
+    "notes": [
+      "Examples: below $5 realized equity = 1 open position; $5 to below $10 = 2; $10 to below $15 = 3.",
+      "The $5 milestones follow the user's explicit $5/$10 examples; they are not a claim that each account doubling is exactly $5.",
+      "Do not count unrealized mark-to-market gains when increasing position capacity.",
+      "An open position occupies a slot until its exit is confirmed and reconciled.",
+      "A mint is permanently blocked from another entry after its first entry, including after a full exit.",
+      "Persist the set of previously traded mints in the durable trade ledger and reserve entry atomically before submitting an order."
+    ]
   }
 }
