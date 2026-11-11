@@ -15,7 +15,7 @@ on:
         description: Resume histories marked incomplete and then decode the cohort
         required: false
         type: boolean
-        default: false
+        default: true
   push:
     paths:
       - "hourly_cohort.py"
@@ -111,7 +111,7 @@ jobs:
           COHORT_HOUR_UTC: ${{ github.event.inputs.cohort_hour_utc || '0' }}
           MAX_PAGES_PER_ADDRESS: "20"
           BATCH_SIZE: "5"
-          REPAIR_INCOMPLETE: ${{ github.event.inputs.repair_incomplete || '0' }}
+          REPAIR_INCOMPLETE: ${{ github.event.inputs.repair_incomplete || '1' }}
           MIN_BUYERS_10S: "5"
           MAX_BUNDLE_SHARE: "0.20"
         shell: bash
