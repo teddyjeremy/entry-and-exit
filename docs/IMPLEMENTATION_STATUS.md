@@ -10,7 +10,8 @@ This repository is a read-only Helius research collector. It is not a trading bo
 - Treat a short history page as provisional; mark a history complete only after a subsequent empty page confirms the end.
 - Reject a missing transaction signature before writing a page or advancing the checkpoint.
 - Reject a repeated pagination cursor to prevent silently duplicating a page.
-- Add regression tests for secret redaction, short-page completion, repeated cursors, and missing signatures.
+- Add regression tests for secret redaction, short-page completion, repeated cursors, missing signatures, migrated tokens, non-Pump.fun curves, unknown market state, stale quotes/data, missing fields, and threshold failures.
+- Add a fail-closed eligibility preflight function; missing evidence and migrated/non-Pump.fun states cannot be approved.
 - Run those tests in a separate GitHub Actions workflow.
 - Record the agreed recommended filter baseline as paper-only configuration. Live trading remains disabled.
 
@@ -66,6 +67,7 @@ See `config/strategy_baseline.json`. These are experimental research filters, no
 ## Release status
 
 - Research collector: safety fixes and regression tests added in this branch; CI passed. Real-data pagination fixtures and broader collector validation remain.
+- Eligibility preflight: implemented as a pure fail-closed gate; it still requires a trusted parser to populate its snapshot fields.
 - Historical replay: not implemented.
 - Paper trading engine: not implemented.
 - Live trading: disabled and not implemented.
