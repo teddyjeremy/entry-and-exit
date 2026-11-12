@@ -1,12 +1,12 @@
 {
   "completed": false,
   "label": "failed_coin_1",
-  "last_collected_at": "2026-11-11T19:41:38.954644+00:00",
+  "last_collected_at": "2026-11-12T07:21:30.430361+00:00",
   "last_page_count": 100,
-  "last_signature": "4tbKReKraax5Nw9zp3r165m5a7ycTn59GANodHH2SFss3bjc71PNYrtBiGJUiPQAiCLtFpDzqncvQe3jqzqCwcWd",
+  "last_signature": "4jR5yp5uvSfveHj29p2sYmDBaQLDBoayb4VgAuqJ746cLCQ757EECrxFYBATVGzp2txvFABwx88rGjArx1WSbVWE",
   "mint": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
-  "next_before_signature": "4tbKReKraax5Nw9zp3r165m5a7ycTn59GANodHH2SFss3bjc71PNYrtBiGJUiPQAiCLtFpDzqncvQe3jqzqCwcWd",
-  "pages_collected": 60,
+  "next_before_signature": "4jR5yp5uvSfveHj29p2sYmDBaQLDBoayb4VgAuqJ746cLCQ757EECrxFYBATVGzp2txvFABwx88rGjArx1WSbVWE",
+  "pages_collected": 70,
   "started_at": "2026-11-11T08:09:22.121018+00:00",
-  "transactions_collected": 6000
+  "transactions_collected": 7000
 }
