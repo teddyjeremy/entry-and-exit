@@ -2,11 +2,11 @@
   "address": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump",
   "completed": false,
   "label": "candidate_coin_bxwgus",
-  "last_collected_at": "2026-11-14T18:14:51.036048+00:00",
+  "last_collected_at": "2026-11-14T22:34:54.637628+00:00",
   "last_page_count": 100,
-  "last_signature": "X9jsWw7dXp9xj8wLBqTB3mdZsFRbUfSjAeS6JNj5utumGL3q9gBrjdNLQi35KGUrD4KsEp5rR1aT2HCPndqhT79",
-  "next_before_signature": "X9jsWw7dXp9xj8wLBqTB3mdZsFRbUfSjAeS6JNj5utumGL3q9gBrjdNLQi35KGUrD4KsEp5rR1aT2HCPndqhT79",
-  "pages_collected": 90,
+  "last_signature": "2wm9vmiBQZV4WYaeJvTxKurtDzgHu3CbXr9s4qn7kU7NqJ81Y8k8RQTiqp9xpcYoXAh9dmfK8WekwByWTQQ9WxhJ",
+  "next_before_signature": "2wm9vmiBQZV4WYaeJvTxKurtDzgHu3CbXr9s4qn7kU7NqJ81Y8k8RQTiqp9xpcYoXAh9dmfK8WekwByWTQQ9WxhJ",
+  "pages_collected": 100,
   "started_at": "2026-11-11T08:46:30.986288+00:00",
-  "transactions_collected": 9000
+  "transactions_collected": 10000
 }
