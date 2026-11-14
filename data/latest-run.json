@@ -3,8 +3,8 @@
   "helius_api": "Enhanced Transactions address history + DAS getAsset",
   "page_limit": 100,
   "pages_per_mint_this_run": 10,
-  "run_finished_at": "2026-11-13T19:50:46.208765+00:00",
-  "run_started_at": "2026-11-13T19:50:14.597476+00:00",
+  "run_finished_at": "2026-11-14T06:38:43.021801+00:00",
+  "run_started_at": "2026-11-14T06:38:11.589995+00:00",
   "targets": [
     {
       "bonding_curve_address": null,
@@ -13,8 +13,8 @@
       "completed": false,
       "label": "failed_coin_1",
       "mint": "AqfhLXnYbDBJAuJiP6zKbgj6dPebnEkdwErraAkWpump",
-      "pages_collected": 100,
-      "transactions_collected": 10000
+      "pages_collected": 110,
+      "transactions_collected": 11000
     },
     {
       "bonding_curve_address": null,
@@ -23,8 +23,8 @@
       "completed": false,
       "label": "failed_coin_2",
       "mint": "BfjC849hj766YuM3ApJycWSwbzcKAkB2pUNXZ6NFpump",
-      "pages_collected": 100,
-      "transactions_collected": 10000
+      "pages_collected": 110,
+      "transactions_collected": 11000
     },
     {
       "bonding_curve_address": null,
@@ -43,8 +43,8 @@
       "completed": false,
       "label": "positive_coin_cash_tag",
       "mint": "BoRsyzgtFw56gHqWgqb7wL45bMr9vQMF564j1Gvtcash",
-      "pages_collected": 80,
-      "transactions_collected": 8000
+      "pages_collected": 90,
+      "transactions_collected": 9000
     },
     {
       "bonding_curve_address": "AzoTQt6G3J6J1i1dGXHuAmiVgGN9r58PUmuKbYRAfrhK",
@@ -53,8 +53,8 @@
       "completed": false,
       "label": "candidate_coin_bxwgus",
       "mint": "BXwgus8w5NPgxxWxTUUHiKUz3Jezn8RB6uqowcJxpump",
-      "pages_collected": 70,
-      "transactions_collected": 7000
+      "pages_collected": 80,
+      "transactions_collected": 8000
     }
   ]
 }
